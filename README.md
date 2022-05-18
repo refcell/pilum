@@ -20,6 +20,47 @@ yarn add pilum
 
 ## Usage
 
+Importing in ES6 Javascript / TypeScript:
+```js
+import { Multicall } from 'pilum';
+```
+
+Since `pilum` makes an RPC call to a Multicall contract, we need to use a provider. It's highly recommended that you specify a provider, rather than rely on [ethers](https://docs.ethers.io/v5/)'s default provider (which is what `pilum` does under the hood).
+
+**Recommended Usage** (using a custom provider)
+
+```js
+import { ethers } from 'ethers';
+import { Multicall } from 'pilum';
+
+// Get the default provider from ethers
+let provider = ethers.getDefaultProvider();
+
+// Craft the Multicall Instance
+let multicall = new Multicall(provider);
+
+```
+
+**Unrecommended Minimal Usage**
+
+```js
+import { ethers } from 'ethers';
+import { Multicall } from 'pilum';
+
+// Define our calls
+let calls = [
+  {
+    reference: 'multicall3',
+    contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
+    abi: [ { name: 'getBlockNumber', type: 'function', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
+    calls: [{ reference: 'blockNumCall', methodName: 'getBlockNumber', methodParameters: [] }]
+  }
+];
+
+// Call the Multicall associated functions directly
+let call_results = await Multicall.call(calls);
+
+```
 
 
 #### Custom Multicall Contracts

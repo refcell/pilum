@@ -10,9 +10,11 @@
     "module": "esnext",
     "declaration": true,
     "outDir": "./dist/esm",
-    "rootDir": "./src",
+    "baseUrl": "src",
+    "rootDir": "src",
     "strict": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
@@ -31,5 +33,9 @@
     "src/jest",
     "**/*.spec.ts",
     "**/*.mock.ts"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
   ]
 }

@@ -1,10 +1,30 @@
-import { BigNumber, ethers } from 'ethers';
-import { defaultAbiCoder } from 'ethers/lib/utils';
+import { ethers } from 'ethers';
+import { BaseProvider, Networkish } from '@ethersproject/providers';
 
-import networks from './networks.json';
+import { networks } from './networks';
+import { multicall1, multicall2, multicall3 } from './abis';
+import { ContractCall, ContractCallResult } from 'models';
 
+// Multicall - A library for calling multiple contracts in aggregate
 export class Multicall {
+  public provider: BaseProvider;
+  public network: Networkish;
 
+  // TODO: cache calls by block
+
+  constructor(options?: {
+    provider?: BaseProvider;
+    network?: Networkish;
+  }) {
+    // Extract the network or default to 1
+    this.network = options && options.network ? options.network : 1;
+    // If we have a network but not a provider, let's get the default provider for the given network
+    this.provider = options && options.provider ? options.provider : ethers.getDefaultProvider(this.network);
+  }
+
+  public async call(calls: ContractCall[] | ContractCall): Promise<ContractCallResult[]> {
+
+  }
 
 }
 
