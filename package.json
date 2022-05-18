@@ -3,7 +3,7 @@
   "description": "Extremely Minimal Multicall3 Typescript Library",
   "author": "Andreas Bigger <andreas@nascent.xyz>",
   "license": "AGPL-3.0-only",
-  "version": "0.1.0",
+  "version": "1.3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/abigger87/pilum.git"
