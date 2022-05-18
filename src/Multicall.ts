@@ -1,8 +1,15 @@
-import { StaticJsonRpcProvider } from '@ethersproject/providers';
-import set from 'lodash.set';
-import { multicall } from '../utils';
+import { BigNumber, ethers } from 'ethers';
+import { defaultAbiCoder } from 'ethers/lib/utils';
 
-export default class Multicaller {
+import networks from './networks.json';
+
+export class Multicall {
+
+
+}
+
+
+export class Multicaller {
   public network: string;
   public provider: StaticJsonRpcProvider;
   public abi: any[];
