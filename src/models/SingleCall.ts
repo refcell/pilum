@@ -5,5 +5,5 @@ export interface SingleCall {
   method: string;
   graceful: boolean;
   value: BigNumberish;
-  methodParameters: any[];
+  params: any[];
 }
