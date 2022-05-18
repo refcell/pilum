@@ -1,6 +1,6 @@
 <img align="right" width="150" height="150" top="100" src="./assets/pilum.png">
 
-# pilum • [![tests](https://github.com/abigger87/pilum/actions/workflows/tests.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/tests.yml) [![publish](https://github.com/abigger87/pilum/actions/workflows/publish.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/publish.yml) ![GitHub](https://img.shields.io/github/license/abigger87/pilum)  ![GitHub package.json version](https://img.shields.io/github/package-json/v/abigger87/pilum)
+# pilum • [![tests](https://github.com/abigger87/pilum/actions/workflows/tests.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/tests.yml) [![publish](https://github.com/abigger87/pilum/actions/workflows/publish.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/publish.yml) ![License](https://img.shields.io/github/license/abigger87/pilum)  ![Package Version](https://img.shields.io/github/package-json/v/abigger87/pilum)
 
 Lightweight, Modern Typescript Library for **[Multicall3](https://github.com/mds1/multicall)**.
 
