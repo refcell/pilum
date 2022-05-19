@@ -1,49 +1,49 @@
-import { ethers } from 'ethers';
+import { Contract, ContractInterface, ethers } from 'ethers';
 import { BaseProvider, Networkish } from '@ethersproject/providers';
 
 import { networks } from './networks';
 import { multicall1, multicall2, multicall3 } from './abis';
-import { AggregatedCall, ContractCall, ContractCallResult } from 'models';
+import { Aggregate3FullResponse, Aggregate3Response, AggregatedCall, ContractCall, ContractCallResult } from 'models';
 
 type Address = string;
 
 // Multicall - A library for calling multiple contracts in aggregate
 export class Multicall {
   public provider: BaseProvider;
-  public networkId: Networkish;
-  public network: object;
-  public multicall: object;
   public chainId: number;
+  public network: object;
+  public multicall: string;
+  public abi: object;
 
   // TODO: cache calls by block
 
-  async constructor(options?: {
+  constructor(options?: {
     address?: Address;
     provider?: BaseProvider;
-    network?: Networkish;
+    network?: number;
   }) {
     // Extract the network or default to 1
-    this.networkId = options && options.network ? options.network : 1;
+    this.chainId = options && options.network ? options.network : 1;
     // If we have a network but not a provider, let's get the default provider for the given network
-    this.provider = options && options.provider ? options.provider : ethers.getDefaultProvider(this.network);
-    const { chainId } = await this.provider.getNetwork();
-    this.chainId = chainId;
-    this.network = networks[chainId.toString()];
-    this.multicall = multicall3;
+    this.provider = options && options.provider ? options.provider : ethers.getDefaultProvider(this.chainId);
+    this.network = networks[this.chainId.toString()];
+    this.abi = multicall3;
+    this.multicall = this.network['multicall'];
     if (options && options.address) {
       if (this.network["multicall"].toLowerCase() == options.address.toLowerCase()) {
-        this.multicall = multicall1;
+        this.abi = multicall1;
+        this.multicall = this.network['multicall2'];
       } else if (this.network["multicall2"].toLowerCase() == options.address.toLowerCase()) {
-        this.multicall = multicall2;
+        this.abi = multicall2;
+        this.multicall = this.network['multicall3'];
       }
     }
 
     // TODO: remove debugs
     console.log('provider', this.provider);
-    console.log('networkId', this.networkId);
+    console.log('chainId', this.chainId);
     console.log('network', this.network);
     console.log('Multicall', this.multicall);
-    console.log('chainId', this.chainId);
   }
 
   public static encode(calls: ContractCall[]): AggregatedCall[] {
@@ -63,6 +63,7 @@ export class Multicall {
         encodedCalls.push({
           contractContextIndex: index,
           contractMethodIndex: calli,
+          allowFailure: method.allowFailure,
           target: call.contractAddress,
           encodedData,
         });
@@ -71,30 +72,86 @@ export class Multicall {
     return encodedCalls;
   }
 
-  public static async execute(calls: AggregatedCall[]): Promise<AggregateResponse> {
-    let ethersProvider = this.getTypedOptions<MulticallOptionsEthers>()
-      .ethersProvider;
+  // Constructs an ethers Contract
+  public static getContract(address: string, abi: object, provider: ethers.providers.Provider | ethers.Signer): Contract {
+    // Create the contract interface using the provided abi
+    const contractInterface: ContractInterface = new ethers.utils.Interface(JSON.stringify(abi));
 
-    if (!ethersProvider) {
-      const customProvider = this.getTypedOptions<
-        MulticallOptionsCustomJsonRpcProvider
-      >();
-      if (customProvider.nodeUrl) {
-        ethersProvider = new ethers.providers.JsonRpcProvider(
-          customProvider.nodeUrl
-        );
+    // Construct the contract
+    return new ethers.Contract(
+      address,
+      contractInterface,
+      provider
+    );
+  }
+
+  // Aggregate3 Call on Multicall3 Contract
+  // Builds response from Multicall3 specific response format
+  public async aggregate3(calls: AggregatedCall[], contract: Contract): Promise<Aggregate3FullResponse> {
+    // Call Multicall3 aggregate3 method and get back the returnData[]
+    const contractResponse = (await contract.callStatic.aggregate3(
+      calls.map(call => {
+        return {
+          target: call.encodedData,
+          allowFailure: call.allowFailure,
+          callData: call.encodedData,
+        }
+      })
+    )) as Aggregate3Response;
+
+    // Build the Aggregate3FullResponse from the Multicall3 Aggregate3Response
+    const a3Response: Aggregate3FullResponse = {
+      results: [],
+    };
+
+    for (let i = 0; i < contractResponse.returnData.length; i++) {
+      const existingResponse = aggregateResponse.results.find(
+        (c) => c.contractContextIndex === calls[i].contractContextIndex
+      );
+      if (existingResponse) {
+        existingResponse.methodResults.push({
+          result: contractResponse.returnData[i],
+          contractMethodIndex: calls[i].contractMethodIndex,
+        });
       } else {
-        ethersProvider = ethers.getDefaultProvider();
+        aggregateResponse.results.push({
+          methodResults: [
+            {
+              result: contractResponse.returnData[i],
+              contractMethodIndex: calls[i].contractMethodIndex,
+            },
+          ],
+          contractContextIndex: calls[i].contractContextIndex,
+        });
       }
     }
 
-    const network = await ethersProvider.getNetwork();
+    return a3Response;
+  }
 
-    const contract = new ethers.Contract(
-      this.getContractBasedOnNetwork(network.chainId),
-      this.ABI,
-      ethersProvider
-    );
+  // Aggregates Calls with verbose parameters
+  public static async execVerbose(
+    abi: object,
+    multicall: string,
+    version: number,
+    provider: BaseProvider,
+    calls: AggregatedCall[]
+  ): Promise<AggregateResponse> {
+    const contract: Contract = Multicall.getContract(multicall, abi, provider);
+
+    // Vary call by multicall version and gracefull specification
+    switch (version) {
+      case 1: {
+
+      }
+      case 2: {
+
+      }
+      case 3: {
+
+      }
+    }
+
 
     if (this._options.tryAggregate) {
       const contractResponse = (await contract.callStatic.tryBlockAndAggregate(
@@ -112,6 +169,14 @@ export class Multicall {
     }
   }
 
+  public static async execute(calls: AggregatedCall[]): Promise<AggregateResponse> {
+    return await Multicall.execVerbose(ethers.getDefaultProvider(), calls);
+  }
+
+  public async execute(calls: AggregatedCall[]): Promise<AggregateResponse> {
+    return await Multicall.execVerbose(this.provider, calls);
+  }
+
 
   public async call(calls: ContractCall[] | ContractCall): Promise<ContractCallResult[]> {
     // Array validation
@@ -124,7 +189,7 @@ export class Multicall {
     const execres: AggregatedResult[] = await Multicall.execute(encoded);
 
     // TODO: remove
-    console.log('execres', execres);
+    console.log('exec result:', execres);
 
     // TODO: actually return the results
     return [];

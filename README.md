@@ -36,9 +36,29 @@ import { Multicall } from 'pilum';
 // Get the default provider from ethers
 let provider = ethers.getDefaultProvider();
 
+// Create a custom provider
+let provider = new ethers.providers.JsonRpcProvider(
+  "https://mainnet.infura.io/v3/<YOUR-INFURA-API-KEY>" // Example RPC URL
+);
+
 // Craft the Multicall Instance
 let multicall = new Multicall(provider);
 
+// Define our calls
+let calls = [
+  {
+    reference: 'multicall3',
+    contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
+    abi: [ { name: 'getBlockNumber', type: 'function', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
+    calls: [{ reference: 'blockNumCall', methodName: 'getBlockNumber', methodParameters: [] }]
+  }
+];
+
+// Call the Multicall associated functions directly
+let call_results = await Multicall.call(calls);
+
+// Print the call result
+console.log(call_results);
 ```
 
 **Unrecommended Minimal Usage**
@@ -60,6 +80,8 @@ let calls = [
 // Call the Multicall associated functions directly
 let call_results = await Multicall.call(calls);
 
+// Print the call result
+console.log(call_results);
 ```
 
 
@@ -82,6 +104,9 @@ But, [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.s
 
 ```ml
 src
+├─ abis — Multicall Contract ABIs
+├─ models — Multicall Class Argument and Response Types
+├─ networks — Network Configurations and their respective Multicall Contract Deployment Addresses
 ├─ tests
 │  └─ Multicall.t — "Multicall Tests"
 ├─ index.ts — "Package Re-exports"
@@ -93,14 +118,15 @@ src
 
 [AGPL-3.0-only](https://github.com/abigger87/pilum/blob/master/LICENSE)
 
+
 ## Acknowledgements
 
 - [Multicall3](https://github.com/mds1/multicall)
+- [ethereum-multicall](https://github.com/joshstevens19/ethereum-multicall)
+- [Multicall.js](https://github.com/makerdao/multicall.js)
+- [0xSequence's Multicall Library](https://github.com/0xsequence/sequence.js)
 - [snapshot.js](https://github.com/snapshot-labs/snapshot.js)
 - [MakerDAO's Multicall](https://github.com/makerdao/multicall)
-- [0xSequence's Multicall](https://github.com/0xsequence/sequence.js)
-- [ethereum-multicall](https://github.com/joshstevens19/ethereum-multicall)
-- [foundry](https://github.com/gakonst/foundry)
 
 
 ## Disclaimer

@@ -1,10 +1,10 @@
 
-import { CallReturnContext } from './call-return-context';
-import { ContractCallContext } from './contract-call-context';
+import { ContractCall } from './ContractCall';
+import { CallResult } from './CallResult';
 
-export interface ContractCallReturnContext {
-  originalContractCallContext: ContractCallContext;
-  callsReturnContext: CallReturnContext[];
+export interface ContractCallResult {
+  call: ContractCall;
+  result: CallResult[];
 }
 
 export interface ContractCallResults {
