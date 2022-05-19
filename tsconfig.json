@@ -33,9 +33,11 @@
     "src/jest",
     "**/*.spec.ts",
     "**/*.mock.ts"
+    // "**/*.test.ts"
   ],
   "include": [
     "src/**/*.ts",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "src/**/*.test.ts"
   ]
 }

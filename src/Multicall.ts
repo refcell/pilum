@@ -28,14 +28,14 @@ export class Multicall {
     this.provider = options && options.provider ? options.provider : ethers.getDefaultProvider(this.chainId);
     this.network = networks[this.chainId.toString()];
     this.abi = multicall3;
-    this.multicall = this.network['multicall'];
+    this.multicall = this.network['multicall3'];
     if (options && options.address) {
       if (this.network["multicall"].toLowerCase() == options.address.toLowerCase()) {
         this.abi = multicall1;
-        this.multicall = this.network['multicall2'];
+        this.multicall = this.network['multicall'];
       } else if (this.network["multicall2"].toLowerCase() == options.address.toLowerCase()) {
         this.abi = multicall2;
-        this.multicall = this.network['multicall3'];
+        this.multicall = this.network['multicall2'];
       }
     }
 

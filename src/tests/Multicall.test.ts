@@ -1,8 +1,6 @@
 import { ethers } from 'ethers';
-import { AggregateFullResponse } from 'models';
-import { Multicall } from 'Multicall';
-import { multicall3 } from 'abis';
-import { networks } from 'networks';
+import { Multicall } from '../Multicall';
+import { multicall1, multicall3 } from '../abis';
 
 // Globally define calls
 const calls = [
@@ -39,7 +37,7 @@ describe('Initialization', () => {
 
     expect(multicall.chainId).toBe(1);
     expect(multicall.provider).toBeInstanceOf(ethers.providers.BaseProvider);
-    expect(multicall.network).toEqual(networks["1"]);
+    expect(multicall.network['chainId']).toEqual(1);
     expect(multicall.multicall).toBe('0xcA11bde05977b3631167028862bE2a173976CA11');
     expect(multicall.abi).toEqual(multicall3);
   });
@@ -54,16 +52,32 @@ describe('Initialization', () => {
 
     expect(multicall.chainId).toBe(5);
     expect(multicall.provider).toBeInstanceOf(ethers.providers.BaseProvider);
-    expect(multicall.network).toBeInstanceOf(networks["5"]);
-    expect(multicall.multicall).toBe('0x0000000000000000000000000000000000000000');
+    expect(multicall.network['chainId']).toEqual(5);
+    // Address should revert to multicall3 if it is not a valid multicall address
+    expect(multicall.multicall).toBe('0xcA11bde05977b3631167028862bE2a173976CA11');
     expect(multicall.abi).toEqual(multicall3);
+  });
+
+  it('Instantiates Custom Address Multicall Correctly', async () => {
+    // Create interesting multicalls
+    const multicall = new Multicall({
+      address: '0x77dca2c955b15e9de4dbbcf1246b4b85b651e50e',
+      network: 5,
+      provider: new ethers.providers.JsonRpcProvider('http://localhost:8545')
+    });
+
+    expect(multicall.chainId).toBe(5);
+    expect(multicall.provider).toBeInstanceOf(ethers.providers.BaseProvider);
+    expect(multicall.network['chainId']).toEqual(5);
+    expect(multicall.multicall).toBe('0x77dca2c955b15e9de4dbbcf1246b4b85b651e50e');
+    expect(multicall.abi).toEqual(multicall1);
   });
 });
 
 describe('Calling', () => {
   it('Can Call Without Instantiation', async () => {
     // Call the Multicall associated functions directly
-    let call_results: AggregateFullResponse = await Multicall.call(calls);
+    let call_results = await Multicall.call(calls);
 
     // Print the call result
     console.log(call_results);
