@@ -3,7 +3,7 @@ import { BaseProvider } from '@ethersproject/providers';
 
 import { networks } from './networks';
 import { multicall1, multicall2, multicall3 } from './abis';
-import { AggregateCallResponse, AggregatedCall, AggregateFullResponse, ContractCall } from 'models';
+import { AggregateCallResponse, AggregatedCall, AggregateFullResponse, ContractCall, RawAggregateCallResponse } from 'models';
 
 type Address = string;
 
@@ -63,7 +63,7 @@ export class Multicall {
         encodedCalls.push({
           contractContextIndex: index,
           contractMethodIndex: calli,
-          allowFailure: method.allowFailure,
+          allowFailure: method.allowFailure || false,
           target: call.contractAddress,
           encodedData,
         });
@@ -137,6 +137,42 @@ export class Multicall {
     return Multicall.explodeResponse(res, calls);
   }
 
+  // tryAggregate Call on Multicall2 or Multicall3 Contract
+  public static async tryAggregate(calls: AggregatedCall[], contract: Contract): Promise<AggregateFullResponse> {
+    const res = (await contract.callStatic.tryAggregate(
+      // If any call doesn't allow failure, the whole tried aggregation should fail
+      calls.map(call => call.allowFailure).reduce((acc, cur) => cur || acc, false),
+      calls.map(call => {
+        return {
+          target: call.encodedData,
+          callData: call.encodedData,
+        }
+      })
+    )) as AggregateCallResponse;
+
+    return Multicall.explodeResponse(res, calls);
+  }
+
+  // tryAggregate Call on Multicall2 or Multicall3 Contract
+  public static async aggregate(calls: AggregatedCall[], contract: Contract): Promise<AggregateFullResponse> {
+    const res = (await contract.callStatic.aggregate(
+      calls.map(call => {
+        return {
+          target: call.encodedData,
+          callData: call.encodedData,
+        }
+      })
+    )) as RawAggregateCallResponse;
+
+    // Translate the raw response into an aggregate3 and tryAggregate response
+    // NOTE: Ignores the block number from the response
+    const aggregatedResponse: AggregateCallResponse = {
+      returnData: res.returnData,
+    };
+
+    return Multicall.explodeResponse(aggregatedResponse, calls);
+  }
+
   // Aggregates Calls with verbose parameters
   public static async execVerbose(
     abi: object,
@@ -153,20 +189,19 @@ export class Multicall {
     if (contract.interface.functions['aggregate3'].name.length > 0) {
       return await Multicall.aggregate3(calls, contract);
     } else if (contract.interface.functions['tryAggregate'].name.length > 0) {
-
+      // TODO: best design pattern to pass in a tryAggregate graceful param?
+      // TODO: maybe in the top-level call methods, an object should be passed in with an option graceful param
+      // TODO: and each call's allowFailure flag should also be an optional param
+      return await Multicall.tryAggregate(calls, contract);
     } else if (contract.interface.functions['aggregate'].name.length > 0) {
-
+      return await Multicall.aggregate(calls, contract);
     } else {
       throw new Error('Multicall contract does not have any supported aggregation method!');
     }
   }
 
-  public static async execute(calls: AggregatedCall[]): Promise<AggregateFullResponse> {
-    return await Multicall.execVerbose(ethers.getDefaultProvider(), calls);
-  }
-
-  public async execute(calls: AggregatedCall[]): Promise<AggregateFullResponse> {
-    return await Multicall.execVerbose(this.abi, this.multicall, this.provider, calls);
+  public static async execute(abi: object, multicall: string, provider: BaseProvider, calls: AggregatedCall[]): Promise<AggregateFullResponse> {
+    return await Multicall.execVerbose(abi, multicall, provider, calls);
   }
 
   public static async call(calls: ContractCall[] | ContractCall): Promise<AggregateFullResponse> {
@@ -176,8 +211,13 @@ export class Multicall {
     // Encode the calls
     const encoded: AggregatedCall[] = Multicall.encode(callray);
 
+    // Craft default configuration
+    const abi: object = multicall3;
+    const multicall3Address: string = networks["1"]["multicall3"];
+    const provider: BaseProvider = ethers.getDefaultProvider();
+
     // Execute and return the calls
-    return await Multicall.execute(encoded);
+    return await Multicall.execute(abi, multicall3Address, provider, encoded);
   }
 
   public async call(calls: ContractCall[] | ContractCall): Promise<AggregateFullResponse> {
@@ -188,7 +228,7 @@ export class Multicall {
     const encoded: AggregatedCall[] = Multicall.encode(callray);
 
     // Execute and return the calls
-    return await this.execute(encoded);
+    return await Multicall.execute(this.abi, this.multicall, this.provider, encoded);
   }
 }
 
