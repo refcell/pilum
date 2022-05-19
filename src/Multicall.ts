@@ -1,9 +1,9 @@
 import { Contract, ContractInterface, ethers } from 'ethers';
-import { BaseProvider, Networkish } from '@ethersproject/providers';
+import { BaseProvider } from '@ethersproject/providers';
 
 import { networks } from './networks';
 import { multicall1, multicall2, multicall3 } from './abis';
-import { Aggregate3FullResponse, Aggregate3Response, AggregatedCall, ContractCall, ContractCallResult } from 'models';
+import { AggregateCallResponse, AggregatedCall, AggregateFullResponse, ContractCall } from 'models';
 
 type Address = string;
 
@@ -85,39 +85,29 @@ export class Multicall {
     );
   }
 
-  // Aggregate3 Call on Multicall3 Contract
-  // Builds response from Multicall3 specific response format
-  public async aggregate3(calls: AggregatedCall[], contract: Contract): Promise<Aggregate3FullResponse> {
-    // Call Multicall3 aggregate3 method and get back the returnData[]
-    const contractResponse = (await contract.callStatic.aggregate3(
-      calls.map(call => {
-        return {
-          target: call.encodedData,
-          allowFailure: call.allowFailure,
-          callData: call.encodedData,
-        }
-      })
-    )) as Aggregate3Response;
-
-    // Build the Aggregate3FullResponse from the Multicall3 Aggregate3Response
-    const a3Response: Aggregate3FullResponse = {
+  // Explodes an Aggregate Response into the Full Response
+  public static explodeResponse(res: AggregateCallResponse, calls: AggregatedCall[]): AggregateFullResponse {
+    // Build the AggregateFullResponse from the Multicall3 Aggregate3Response
+    const a3Response: AggregateFullResponse = {
       results: [],
     };
 
-    for (let i = 0; i < contractResponse.returnData.length; i++) {
-      const existingResponse = aggregateResponse.results.find(
+    // Iterate over the return data
+    for (let i = 0; i < res.returnData.length; i++) {
+      // For existing contracts in the multicall, we can just append to the method results
+      const existingResponse = a3Response.results.find(
         (c) => c.contractContextIndex === calls[i].contractContextIndex
       );
       if (existingResponse) {
         existingResponse.methodResults.push({
-          result: contractResponse.returnData[i],
+          result: res.returnData[i],
           contractMethodIndex: calls[i].contractMethodIndex,
         });
       } else {
-        aggregateResponse.results.push({
+        a3Response.results.push({
           methodResults: [
             {
-              result: contractResponse.returnData[i],
+              result: res.returnData[i],
               contractMethodIndex: calls[i].contractMethodIndex,
             },
           ],
@@ -126,75 +116,79 @@ export class Multicall {
       }
     }
 
+    // Finally, return the full response
     return a3Response;
+  }
+
+  // Aggregate3 Call on Multicall3 Contract
+  // Builds response from Multicall3 specific response format
+  public static async aggregate3(calls: AggregatedCall[], contract: Contract): Promise<AggregateFullResponse> {
+    // Call Multicall3 aggregate3 method and get back the returnData[]
+    const res = (await contract.callStatic.aggregate3(
+      calls.map(call => {
+        return {
+          target: call.encodedData,
+          allowFailure: call.allowFailure,
+          callData: call.encodedData,
+        }
+      })
+    )) as AggregateCallResponse;
+
+    return Multicall.explodeResponse(res, calls);
   }
 
   // Aggregates Calls with verbose parameters
   public static async execVerbose(
     abi: object,
     multicall: string,
-    version: number,
     provider: BaseProvider,
     calls: AggregatedCall[]
-  ): Promise<AggregateResponse> {
+  ): Promise<AggregateFullResponse> {
     const contract: Contract = Multicall.getContract(multicall, abi, provider);
 
-    // Vary call by multicall version and gracefull specification
-    switch (version) {
-      case 1: {
+    // TODO: make this "adaptive" by allowing calls to not specify graceful/allowFailure param
+    // TODO: in this case, multicalls should fall back to backwards-compatible method
 
-      }
-      case 2: {
+    // If the multicall contract has an aggregate3 method, use it
+    if (contract.interface.functions['aggregate3'].name.length > 0) {
+      return await Multicall.aggregate3(calls, contract);
+    } else if (contract.interface.functions['tryAggregate'].name.length > 0) {
 
-      }
-      case 3: {
+    } else if (contract.interface.functions['aggregate'].name.length > 0) {
 
-      }
-    }
-
-
-    if (this._options.tryAggregate) {
-      const contractResponse = (await contract.callStatic.tryBlockAndAggregate(
-        false,
-        this.mapCallContextToMatchContractFormat(calls)
-      )) as AggregateContractResponse;
-
-      return this.buildUpAggregateResponse(contractResponse, calls);
     } else {
-      const contractResponse = (await contract.callStatic.aggregate(
-        this.mapCallContextToMatchContractFormat(calls)
-      )) as AggregateContractResponse;
-
-      return this.buildUpAggregateResponse(contractResponse, calls);
+      throw new Error('Multicall contract does not have any supported aggregation method!');
     }
   }
 
-  public static async execute(calls: AggregatedCall[]): Promise<AggregateResponse> {
+  public static async execute(calls: AggregatedCall[]): Promise<AggregateFullResponse> {
     return await Multicall.execVerbose(ethers.getDefaultProvider(), calls);
   }
 
-  public async execute(calls: AggregatedCall[]): Promise<AggregateResponse> {
-    return await Multicall.execVerbose(this.provider, calls);
+  public async execute(calls: AggregatedCall[]): Promise<AggregateFullResponse> {
+    return await Multicall.execVerbose(this.abi, this.multicall, this.provider, calls);
   }
 
-
-  public async call(calls: ContractCall[] | ContractCall): Promise<ContractCallResult[]> {
+  public static async call(calls: ContractCall[] | ContractCall): Promise<AggregateFullResponse> {
     // Array validation
     let callray: ContractCall[] = !Array.isArray(calls) ? [calls] : calls;
 
     // Encode the calls
     const encoded: AggregatedCall[] = Multicall.encode(callray);
 
-    // Execute the calls
-    const execres: AggregatedResult[] = await Multicall.execute(encoded);
-
-    // TODO: remove
-    console.log('exec result:', execres);
-
-    // TODO: actually return the results
-    return [];
+    // Execute and return the calls
+    return await Multicall.execute(encoded);
   }
 
+  public async call(calls: ContractCall[] | ContractCall): Promise<AggregateFullResponse> {
+    // Array validation
+    let callray: ContractCall[] = !Array.isArray(calls) ? [calls] : calls;
 
+    // Encode the calls
+    const encoded: AggregatedCall[] = Multicall.encode(callray);
+
+    // Execute and return the calls
+    return await this.execute(encoded);
+  }
 }
 

@@ -1,4 +1,4 @@
-export interface Aggregate3FullResponse {
+export interface AggregateFullResponse {
   results: Array<{
     contractContextIndex: number;
     methodResults: Array<{

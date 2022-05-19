@@ -10,6 +10,9 @@ Since calls are bundled as a single JSON-RPC request to the Multicall3 contract,
 
 By default, the deployed [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) contract is used. This can be overridden, see [Custom-Multicall-Contracts](####Custom-Multicall-Contracts). **But**, [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) is **highly recommendeded** (more details below).
 
+Multicall aggregators and executors are statically overloaded to allow for zero-config execution. Meaning, you can execute calls using Multicall with **zero overhead** except your calls. Although this is not recommended due to its rpc-unreliability, we demonstrate it [here](####Zero-Config-Execution).
+
+
 ## Installation
 
 ```sh
@@ -18,6 +21,7 @@ npm install pilum
 yarn add pilum
 ```
 
+
 ## Usage
 
 Importing in ES6 Javascript / TypeScript:
@@ -25,7 +29,7 @@ Importing in ES6 Javascript / TypeScript:
 import { Multicall } from 'pilum';
 ```
 
-Since `pilum` makes an RPC call to a Multicall contract, we need to use a provider. It's highly recommended that you specify a provider, rather than rely on [ethers](https://docs.ethers.io/v5/)'s default provider (which is what `pilum` does under the hood).
+Since `pilum` makes an RPC call to a Multicall contract, we need to use a provider. It's highly recommended that you specify a provider, rather than rely on [ethers](https://docs.ethers.io/v5/)'s default provider (which is what `pilum` uses under the hood for the [zero config execution](####Zero-Config-Execution)).
 
 **Recommended Usage** (using a custom provider)
 
@@ -61,7 +65,10 @@ let call_results = await Multicall.call(calls);
 console.log(call_results);
 ```
 
-**Unrecommended Minimal Usage**
+
+#### Zero Config Execution
+
+**Not Recommended** (due to RPC unreliability).
 
 ```js
 import { ethers } from 'ethers';
@@ -77,7 +84,7 @@ let calls = [
   }
 ];
 
-// Call the Multicall associated functions directly
+// Call the Multicall associated functions directly with zero overhead
 let call_results = await Multicall.call(calls);
 
 // Print the call result
@@ -98,7 +105,23 @@ const multicall = new Multicall({
 But, [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) is **highly recommendeded**. It's ABI is backwards compatible with Multicall and Multicall2, but it's cheaper to use (so you can fit more calls into a single request), and it adds an `aggregate3` method so you can specify whether calls are allowed to fail on a per-call basis. Additionally, it's deployed on every network at the same address.
 
 
+#### Alternate Networks
+
+By default, `pilum` uses Ethereum mainnet. You can specify a different network by passing a `network` parameter (the chain(network) id) to the constructor like so:
+
+```typescript
+const multicall = new Multicall({
+  network: 4,
+});
+```
+
+Multicall, Multicall2, and Multicall3 deployments are supported across all networks listed in the [Multicall3](https://github.com/mds1/multicall) repository.
+
+
 ## Development
+
+Pull requests are welcome and highly appreciated!
+
 
 **Repository Blueprint**
 

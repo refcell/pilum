@@ -1,6 +1,6 @@
 // Imports
-import { Aggregate3CallResponse } from './Aggregate3CallResponse';
-import { Aggregate3FullResponse } from './Aggregate3FullResponse';
+import { AggregateCallResponse } from './AggregateCallResponse';
+import { AggregateFullResponse } from './AggregateFullResponse';
 import { AggregatedCall } from './AggregatedCall';
 import { ContractCall } from './ContractCall';
 import { SingleCall } from './SingleCall';
@@ -8,8 +8,8 @@ import { SingleResult } from './SingleResult';
 
 // Re-exports
 export {
-  Aggregate3CallResponse,
-  Aggregate3FullResponse,
+  AggregateCallResponse,
+  AggregateFullResponse,
   AggregatedCall,
   ContractCall,
   SingleCall,
