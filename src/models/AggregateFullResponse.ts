@@ -3,7 +3,9 @@ export interface AggregateFullResponse {
     contractContextIndex: number;
     methodResults: Array<{
       contractMethodIndex: number;
-      result: any;
+      blockNumber?: any;
+      blockHash?: string;
+      returnData: any;
     }>;
   }>;
 }

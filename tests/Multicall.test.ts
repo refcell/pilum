@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { Multicall } from '../src/Multicall';
 import { multicall1, multicall3 } from '../src/abis';
 import { networks } from '../src/networks';
@@ -78,7 +78,7 @@ describe('Initialization', () => {
   });
 });
 
-describe('Calling', () => {
+describe('Single Calls', () => {
   it('Can Call Without Instantiation', async () => {
     // Call the Multicall associated functions directly
     const call_results = await Multicall.call(calls);
@@ -86,7 +86,12 @@ describe('Calling', () => {
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
     expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].result.success).toBe(true);
+    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
+    expect(
+      BigNumber.from(
+        call_results.results[0].methodResults[0].returnData[1]
+      ).toNumber()
+    ).toBeGreaterThan(0);
   });
 
   it('Can Call With Recommended Instantiation', async () => {
@@ -106,7 +111,12 @@ describe('Calling', () => {
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
     expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].result.success).toBe(true);
+    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
+    expect(
+      BigNumber.from(
+        call_results.results[0].methodResults[0].returnData[1]
+      ).toNumber()
+    ).toBeGreaterThan(0);
   });
 
   it('Can Call With Multicall2', async () => {
@@ -126,7 +136,11 @@ describe('Calling', () => {
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
     expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].result.success).toBe(true);
+    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
+    const blockNumber = call_results.results[0].methodResults[0].blockNumber;
+    if (blockNumber) {
+      expect(blockNumber.toNumber()).toBeGreaterThan(0);
+    }
   });
 
   it('Can Call With Multicall', async () => {
@@ -146,8 +160,130 @@ describe('Calling', () => {
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
     expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(
-      call_results.results[0].methodResults[0].result.blockNumber.toNumber()
-    ).toBeGreaterThan(0);
+    const blockNumber = call_results.results[0].methodResults[0].blockNumber;
+    if (blockNumber) {
+      expect(blockNumber.toNumber()).toBeGreaterThan(0);
+    }
+  });
+});
+
+// Globally define calls
+const multicalls = [...calls, ...calls, ...calls];
+
+describe('Multicalls', () => {
+  it('Statically Multicalls', async () => {
+    // Call the Multicall associated functions directly
+    const res = await Multicall.call(multicalls);
+
+    // Expect results to equal the number of calls we made
+    expect(res.results.length).toBe(multicalls.length);
+
+    // Expect each call to have length 1
+    res.results.map((result) => expect(result.methodResults.length).toBe(1));
+
+    // Expect each call to be successful
+    res.results.map((result) =>
+      expect(result.methodResults[0].returnData[0]).toBe(true)
+    );
+    res.results.map((result) =>
+      expect(
+        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
+      ).toBeGreaterThan(0)
+    );
+  });
+
+  it('Multicalls With Recommended Instantiation', async () => {
+    // Use the default provider ;P
+    const provider = ethers.getDefaultProvider();
+
+    // Instantiate a Multicall Instance
+    const multicall = new Multicall({
+      address: networks['1']['multicall3'],
+      network: 1,
+      provider,
+    });
+
+    // Method Call
+    const res = await multicall.call(multicalls);
+
+    // Expect results to equal the number of calls we made
+    expect(res.results.length).toBe(multicalls.length);
+
+    // Expect each call to have length 1
+    res.results.map((result) => expect(result.methodResults.length).toBe(1));
+
+    // Expect each call to be successful
+    res.results.map((result) =>
+      expect(result.methodResults[0].returnData[0]).toBe(true)
+    );
+    res.results.map((result) =>
+      expect(
+        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
+      ).toBeGreaterThan(0)
+    );
+  });
+
+  it('Multicalls With Multicall2', async () => {
+    // Use the default provider ;P
+    const provider = ethers.getDefaultProvider();
+
+    // Instantiate a Multicall Instance with Multicall2
+    const multicall = new Multicall({
+      address: networks['1']['multicall2'],
+      network: 1,
+      provider,
+    });
+
+    // Method Call
+    const res = await multicall.call(multicalls);
+
+    console.log('Multicall2 test result:', res.results[0].methodResults);
+
+    // Expect results to equal the number of calls we made
+    expect(res.results.length).toBe(multicalls.length);
+
+    // Expect each call to have length 1
+    res.results.map((result) => expect(result.methodResults.length).toBe(1));
+
+    // Expect each call to be successful
+    res.results.map((result) =>
+      expect(result.methodResults[0].returnData[0]).toBe(true)
+    );
+    res.results.map((result) =>
+      expect(
+        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
+      ).toBeGreaterThan(0)
+    );
+  });
+
+  it('Multicalls With Multicall', async () => {
+    // Use the default provider ;P
+    const provider = ethers.getDefaultProvider();
+
+    // Instantiate a Multicall Instance with Multicall2
+    const multicall = new Multicall({
+      address: networks['1']['multicall'],
+      network: 1,
+      provider,
+    });
+
+    // Method Call
+    const res = await multicall.call(multicalls);
+
+    console.log(res);
+
+    // Expect results to equal the number of calls we made
+    expect(res.results.length).toBe(multicalls.length);
+
+    // Expect each call to have length 1
+    res.results.map((result) => expect(result.methodResults.length).toBe(1));
+
+    // Expect each call to be successful
+    res.results.map((result) => {
+      const blockNumber = result.methodResults[0].blockNumber;
+      if (blockNumber) {
+        expect(blockNumber.toNumber()).toBeGreaterThan(0);
+      }
+    });
   });
 });

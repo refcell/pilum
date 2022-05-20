@@ -18,9 +18,6 @@ export class Multicall {
   public multicall: string;
   public abi: object;
 
-  // TODO: cache calls by block
-  // TODO: allow each call to specify network and address (the multicaller can dynamically split by network)
-
   constructor(options?: {
     address?: Address;
     provider?: ethers.providers.Provider | ethers.Signer;
@@ -104,21 +101,25 @@ export class Multicall {
     };
 
     // Iterate over the return data
-    for (let i = 0; i < res.result.length; i++) {
+    for (let i = 0; i < res.returnData.length; i++) {
       // For existing contracts in the multicall, we can just append to the method results
       const existingResponse = a3Response.results.find(
         (c) => c.contractContextIndex === calls[i].contractContextIndex
       );
       if (existingResponse) {
         existingResponse.methodResults.push({
-          result: res.result[i],
+          blockHash: res.blockHash,
+          blockNumber: res.blockNumber,
+          returnData: res.returnData[i],
           contractMethodIndex: calls[i].contractMethodIndex,
         });
       } else {
         a3Response.results.push({
           methodResults: [
             {
-              result: res.result[i],
+              blockHash: res.blockHash,
+              blockNumber: res.blockNumber,
+              returnData: res.returnData[i],
               contractMethodIndex: calls[i].contractMethodIndex,
             },
           ],
@@ -146,9 +147,13 @@ export class Multicall {
       };
     });
 
+    const callres = await contract.callStatic.aggregate3(a3calls);
+
+    console.log('Multicall3 call res:', callres);
+
     // Call Multicall3 aggregate3 method and get back the returnData[]
     const res: AggregateCallResponse = {
-      result: await contract.callStatic.aggregate3(a3calls),
+      returnData: callres,
     };
 
     return Multicall.explodeResponse(res, calls);
@@ -167,15 +172,23 @@ export class Multicall {
       };
     });
 
+    const callres = await contract.callStatic.tryBlockAndAggregate(
+      // If any call doesn't allow failure, the whole tried aggregation should fail
+      calls
+        .map((call) => call.allowFailure)
+        .reduce((acc, cur) => cur || acc, false),
+      mcalls
+    );
+
+    console.log('Multicall2 calls res:', callres);
+
     const res: AggregateCallResponse = {
-      result: await contract.callStatic.tryAggregate(
-        // If any call doesn't allow failure, the whole tried aggregation should fail
-        calls
-          .map((call) => call.allowFailure)
-          .reduce((acc, cur) => cur || acc, false),
-        mcalls
-      ),
+      blockNumber: callres[0],
+      blockHash: callres[1],
+      returnData: callres[2],
     };
+
+    console.log('Multicall2 result: ', res);
 
     return Multicall.explodeResponse(res, calls);
   }
@@ -193,18 +206,19 @@ export class Multicall {
       };
     });
 
+    console.log('Calls:', calls);
+    console.log('Number of calls:', mcalls.length);
+
     // Statically call on the multicall contract
     const res = await contract.callStatic.aggregate(mcalls);
+
+    console.log(res);
 
     // Translate the raw response into an aggregate3 and tryAggregate response
     // NOTE: Ignores the block number from the response
     const aggregatedResponse: AggregateCallResponse = {
-      result: [
-        {
-          blockNumber: res[0],
-          returnData: res[1],
-        } as any,
-      ],
+      blockNumber: res[0],
+      returnData: res[1],
     };
 
     return Multicall.explodeResponse(aggregatedResponse, calls);

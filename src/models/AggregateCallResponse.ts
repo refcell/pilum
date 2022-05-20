@@ -1,4 +1,6 @@
 // returnData
 export interface AggregateCallResponse {
-  result: any[];
+  blockNumber?: any;
+  blockHash?: string;
+  returnData: any[];
 }
