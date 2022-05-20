@@ -1,4 +1,4 @@
-tests/
-node_modules/
-examples/
-assets/
+tests
+node_modules
+examples
+assets
