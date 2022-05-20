@@ -1,0 +1,16 @@
+{
+  "name": "uniquery",
+  "description": "Uniswap Querying",
+  "author": "https://github.com/abigger87",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "pilum": "^1.4.0"
+  },
+  "scripts": {
+    "query": "ts-node ./src/index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  }
+}

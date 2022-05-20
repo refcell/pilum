@@ -8,9 +8,9 @@ Multicall3 flexibly aggregates results from multiple smart contract function cal
 
 Since calls are bundled as a single JSON-RPC request to the Multicall3 contract, this dramatically reduces the load on RPC servers, especially important for remote hosts like Infura and Alchemy. Additionally, packing calls in one request causes the calls to be executed in the same block, with the block number returned so potential responses from outdated RPC nodes may be ignored.
 
-By default, the deployed [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) contract is used. This can be overridden, see [Custom-Multicall-Contracts](####Custom-Multicall-Contracts). **But**, [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) is **highly recommendeded** (more details below).
+By default, the deployed [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) contract is used. This can be overridden, see [Custom-Multicall-Contracts](#Custom-Multicall-Contracts). **But**, [Multicall3](https://github.com/mds1/multicall/blob/master/src/Multicall3.sol) is **highly recommendeded** (more details below).
 
-Multicall aggregators and executors are statically overloaded to allow for zero-config execution. Meaning, you can execute calls using Multicall with **zero overhead** except your calls. Although this is not recommended due to its rpc-unreliability, we demonstrate it [here](####Zero-Config-Execution).
+Multicall aggregators and executors are statically overloaded to allow for zero-config execution. Meaning, you can execute calls using Multicall with **zero overhead** except your calls. Although this is not recommended due to its rpc-unreliability, we demonstrate it [here](#Zero-Config-Execution).
 
 
 ## Installation
@@ -29,7 +29,7 @@ Importing in ES6 Javascript / TypeScript:
 import { Multicall } from 'pilum';
 ```
 
-Since `pilum` makes an RPC call to a Multicall contract, we need to use a provider. It's highly recommended that you specify a provider, rather than rely on [ethers](https://docs.ethers.io/v5/)'s default provider (which is what `pilum` uses under the hood for the [zero config execution](####Zero-Config-Execution)).
+Since `pilum` makes an RPC call to a Multicall contract, we need to use a provider. It's highly recommended that you specify a provider, rather than rely on [ethers](https://docs.ethers.io/v5/)'s default provider (which is what `pilum` uses under the hood for the [zero config execution](#Zero-Config-Execution)).
 
 **Recommended Usage** (using a custom provider)
 
@@ -37,32 +37,31 @@ Since `pilum` makes an RPC call to a Multicall contract, we need to use a provid
 import { ethers } from 'ethers';
 import { Multicall } from 'pilum';
 
-// Get the default provider from ethers
-let provider = ethers.getDefaultProvider();
-
 // Create a custom provider
-let provider = new ethers.providers.JsonRpcProvider(
+const provider = new ethers.providers.JsonRpcProvider(
   "https://mainnet.infura.io/v3/<YOUR-INFURA-API-KEY>" // Example RPC URL
 );
 
 // Craft the Multicall Instance
-let multicall = new Multicall(provider);
+const multicall = new Multicall({
+  provider: provider
+});
 
 // Define our calls
-let calls = [
+const calls = [
   {
     reference: 'multicall3',
     contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
-    abi: [ { name: 'getBlockNumber', type: 'function', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
-    calls: [{ reference: 'blockNumCall', methodName: 'getBlockNumber', methodParameters: [] }]
+    abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
+    calls: [{ reference: 'blockNumCall', method: 'getBlockNumber', params: [], value: 0 }]
   }
 ];
 
 // Call the Multicall associated functions directly
-let call_results = await Multicall.call(calls);
+const { results } = await Multicall.call(calls);
 
 // Print the call result
-console.log(call_results);
+console.log(results);
 ```
 
 
@@ -75,20 +74,20 @@ import { ethers } from 'ethers';
 import { Multicall } from 'pilum';
 
 // Define our calls
-let calls = [
+const calls = [
   {
     reference: 'multicall3',
     contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
-    abi: [ { name: 'getBlockNumber', type: 'function', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
-    calls: [{ reference: 'blockNumCall', methodName: 'getBlockNumber', methodParameters: [] }]
+    abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
+    calls: [{ reference: 'blockNumCall', method: 'getBlockNumber', params: [], value: 0 }]
   }
 ];
 
 // Call the Multicall associated functions directly with zero overhead
-let call_results = await Multicall.call(calls);
+const { results } = await Multicall.call(calls);
 
 // Print the call result
-console.log(call_results);
+console.log(results);
 ```
 
 
@@ -122,18 +121,19 @@ Multicall, Multicall2, and Multicall3 deployments are supported across all netwo
 
 Pull requests are welcome and highly appreciated!
 
-
 **Repository Blueprint**
 
 ```ml
+examples
+├─ uniquery — Uniswap Queries
 src
-├─ abis — Multicall Contract ABIs
-├─ models — Multicall Class Argument and Response Types
-├─ networks — Network Configurations and their respective Multicall Contract Deployment Addresses
-├─ tests
-│  └─ Multicall.t — "Multicall Tests"
+├─ abis/ — Multicall Contract ABIs
+├─ models/ — Multicall Class Argument and Response Types
+├─ networks/ — Network Configurations and their respective Multicall Contract Deployment Addresses
 ├─ index.ts — "Package Re-exports"
-└─ Multicall — "The Multicall Contract"
+├─ Multicall.ts — "The Multicall Contract"
+tests
+└─ Multicall.test.ts — "Multicall Tests"
 ```
 
 
