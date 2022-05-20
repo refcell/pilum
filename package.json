@@ -18,8 +18,8 @@
     "prepublish": "tsc",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "tsc": "tsc --noEmit",
-    "lint": "eslint --ext .js,.ts .",
-    "lint:fix": "eslint --ext .js,.ts . --fix"
+    "lint": "eslint --ext .js,.ts src",
+    "lint:fix": "eslint --ext .js,.ts src --fix"
   },
   "devDependencies": {
     "@types/jest": "^27.5.1",
