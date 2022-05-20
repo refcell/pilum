@@ -2,3 +2,9 @@ tests
 node_modules
 examples
 assets
+src
+.eslintrc
+.prettierrc
+jest.config.ts
+tsconfig.json
+tslint.json
