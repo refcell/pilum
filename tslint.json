@@ -3,6 +3,10 @@
   "extends": [
     "tslint:recommended"
   ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "jsRules": {},
   "rules": {
     "variable-name": false,
