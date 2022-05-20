@@ -12,6 +12,8 @@ By default, the deployed [Multicall3](https://github.com/mds1/multicall/blob/mas
 
 Multicall aggregators and executors are statically overloaded to allow for zero-config execution. Meaning, you can execute calls using Multicall with **zero overhead** except your calls. Although this is not recommended due to its rpc-unreliability, we demonstrate it [here](#Zero-Config-Execution).
 
+To further explore using `pilum`, please check out our [Usage](#Usage) docs or dive right into our [examples](./examples).
+
 
 ## Installation
 
@@ -117,9 +119,14 @@ const multicall = new Multicall({
 Multicall, Multicall2, and Multicall3 deployments are supported across all networks listed in the [Multicall3](https://github.com/mds1/multicall) repository.
 
 
+#### Examples
+
+There are numerous examples demonstrating how to use `pilum`'s `Multicall` in the [examples](./examples/) directory.
+
+
 ## Development
 
-Pull requests are welcome and highly appreciated!
+Any and all pull requests are welcome and highly appreciated!
 
 **Repository Blueprint**
 

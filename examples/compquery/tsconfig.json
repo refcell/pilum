@@ -3,6 +3,8 @@
     "target": "es6",
     "lib": [ "es6" ],
     "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": "src",
     "rootDir": "src",
   },

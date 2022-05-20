@@ -1,3 +1,3 @@
 ## Uniquery
 
-Queries Uniswap for various on-chain pool statistics.
+Minimal Queries for on-chain Uniswap pool statistics.

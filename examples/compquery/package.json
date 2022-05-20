@@ -1,6 +1,6 @@
 {
-  "name": "uniquery",
-  "description": "Uniswap Querying",
+  "name": "compquery",
+  "description": "Multicalled Compound Protocol Math Queries",
   "author": "https://github.com/abigger87",
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
