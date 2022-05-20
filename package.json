@@ -13,12 +13,20 @@
     "ethers": "^5.6.4"
   },
   "scripts": {
-    "test": "jest",
-    "tsc": "tsc --noEmit"
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "tsc": "tsc --noEmit",
+    "lint": "eslint --ext .js,.ts .",
+    "lint:fix": "eslint --ext .js,.ts . --fix"
   },
   "devDependencies": {
     "@types/jest": "^27.5.1",
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "@typescript-eslint/parser": "^5.25.0",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "jest": "^28.1.0",
+    "prettier": "^2.6.2",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"

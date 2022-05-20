@@ -10,7 +10,5 @@ jobs:
       - uses: actions/setup-node@v2
       - name: Install Dependencies
         run: yarn
-      - name: Update Modules
-        run: yarn sync
       - name: Run lints
         run: yarn lint

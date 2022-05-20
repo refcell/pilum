@@ -13,11 +13,11 @@ export {
   m1abi as multicall,
   m1abi as multicall1,
   m2abi as multicall2,
-  m3abi as multicall3
+  m3abi as multicall3,
 };
 export default {
   multicall: m1abi,
   multicall1: m1abi,
   multicall2: m2abi,
-  multicall3: m3abi
+  multicall3: m3abi,
 };

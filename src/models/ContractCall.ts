@@ -6,4 +6,4 @@ export interface ContractCall<SomeContext = any> {
   abi: any[];
   calls: SingleCall[];
   context?: SomeContext | undefined;
-};
+}
