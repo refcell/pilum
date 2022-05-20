@@ -71,13 +71,15 @@ const calls = [
   },
 ];
 
-// Declare a new Multicall Instance
-const multicall = new Multicall();
+(async () => {
+  // Declare a new Multicall Instance
+  const multicall = new Multicall();
 
-// Multicall the UniV3 LPs
-const { results } = await multicall.call(calls);
+  // Multicall the UniV3 LPs
+  const { results } = await multicall.call(calls);
 
-// Validate the results
-expect(results.length).toBe(2);
+  // Validate the results
+  expect(results.length).toBe(2);
 
-console.log(results);
+  console.log(results);
+})();

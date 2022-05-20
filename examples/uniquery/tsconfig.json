@@ -9,9 +9,9 @@
     ],
     "module": "esnext",
     "declaration": true,
-    "outDir": "./dist/",
-    "baseUrl": "src",
-    "rootDir": "src",
+    "outDir": "./dist/esm",
+    "baseUrl": ".",
+    "rootDir": ".",
     "strict": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -24,11 +24,16 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "forceConsistentCasingInFileNames": true
   },
   "exclude": [
     "node_modules",
+    "dist",
+    "src/jest",
+    "**/*.spec.ts",
+    "**/*.mock.ts"
+    // "**/*.test.ts"
   ],
   "include": [
     "src/**/*.ts",
