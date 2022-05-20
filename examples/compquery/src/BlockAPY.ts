@@ -11,14 +11,14 @@ import { collectCTokenAddresses } from './Collect';
 // 4. Calculate the borrow apy per block
 
 // IMMUTABLES
-const ETH_MANTISSA = 1e18;
-const BLOCKS_PER_DAY = 6570; // 13.15 seconds per block
-const DAYS_PER_YEAR = 365;
+const ETH_MANTISSA = BigNumber.from(10).pow(18);
+const BLOCKS_PER_DAY = BigNumber.from(6570); // 13.15 seconds per block
+const DAYS_PER_YEAR = BigNumber.from(365);
 const eth_addresses = collectCTokenAddresses('cETH');
 const CETH = eth_addresses['mainnet'];
 
 // Define the calls to be queried with multicall
-const craftCalls = () => [
+const calls = [
   {
     reference: 'supply',
     contractAddress: CETH,
@@ -76,39 +76,42 @@ const calculateBlockAPY = async () => {
   // Instantiate a new Multicall
   const multicall = new Multicall();
 
-  // Craft calls (can be statically defined)
-  const calls = craftCalls();
-
   // Multicall
   const { results } = await multicall.call(calls);
 
-  console.log(results);
+  // Deconstruct apys from the multicall results
+  const supplyApyPerBlock: BigNumber = BigNumber.from(
+    results[0].methodResults[0].returnData[1]
+  );
+  const borrowApyPerBlock = BigNumber.from(
+    results[1].methodResults[0].returnData[1]
+  );
 
-  // Deconstruct decimals and exchange rate from results
-  // const underlyingDecimals: BigNumber = BigNumber.from(
-  //   results[0].methodResults[0].returnData[1]
-  // );
-  // const exchangeRateStored: BigNumber = BigNumber.from(
-  //   results[1].methodResults[0].returnData[1]
-  // );
+  // Calculate the apys
+  const supplyapy = BigNumber.from(1_000_000)
+    .mul(
+      supplyApyPerBlock
+        .mul(BLOCKS_PER_DAY)
+        .add(ETH_MANTISSA)
+        .pow(DAYS_PER_YEAR)
+        .sub(ETH_MANTISSA)
+    )
+    .div(ETH_MANTISSA.pow(DAYS_PER_YEAR));
+  const borrowapy = BigNumber.from(1_000_000)
+    .mul(
+      borrowApyPerBlock
+        .mul(BLOCKS_PER_DAY)
+        .add(ETH_MANTISSA)
+        .pow(DAYS_PER_YEAR)
+        .sub(ETH_MANTISSA)
+    )
+    .div(ETH_MANTISSA.pow(DAYS_PER_YEAR));
 
-  // // Calculate the mantissa differential
-  // const mantissa: BigNumber = BigNumber.from(18)
-  //   .add(underlyingDecimals)
-  //   .sub(C_TOKEN_DECIMALS);
-
-  // // Calculate the ratio of 1 cToken to DAIs using the mantissa differential
-  // const oneCTokenInUnderlying: BigNumber = exchangeRateStored
-  //   .mul(BigNumber.from(1000)) // Scale by 1000 to avoid rounding truncation
-  //   .div(BigNumber.from(10).pow(mantissa));
-
-  // // Try to convert the amount to a number, otherwise print the raw BigNumber
-  // try {
-  //   const amount: number = oneCTokenInUnderlying.toNumber() / 1000.0; // Scale back down to float
-  //   return amount;
-  // } catch (e) {
-  //   throw new Error(`Could not convert ${oneCTokenInUnderlying} to number`);
-  // }
+  return {
+    supply: supplyapy,
+    borrow: borrowapy,
+    base_unit: 1_000_000.0, // we want the base unit to be a float
+  };
 };
 
 export default calculateBlockAPY;

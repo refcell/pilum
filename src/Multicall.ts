@@ -149,8 +149,6 @@ export class Multicall {
 
     const callres = await contract.callStatic.aggregate3(a3calls);
 
-    console.log('Multicall3 call res:', callres);
-
     // Call Multicall3 aggregate3 method and get back the returnData[]
     const res: AggregateCallResponse = {
       returnData: callres,
@@ -180,15 +178,11 @@ export class Multicall {
       mcalls
     );
 
-    console.log('Multicall2 calls res:', callres);
-
     const res: AggregateCallResponse = {
       blockNumber: callres[0],
       blockHash: callres[1],
       returnData: callres[2],
     };
-
-    console.log('Multicall2 result: ', res);
 
     return Multicall.explodeResponse(res, calls);
   }
@@ -206,13 +200,8 @@ export class Multicall {
       };
     });
 
-    console.log('Calls:', calls);
-    console.log('Number of calls:', mcalls.length);
-
     // Statically call on the multicall contract
     const res = await contract.callStatic.aggregate(mcalls);
-
-    console.log(res);
 
     // Translate the raw response into an aggregate3 and tryAggregate response
     // NOTE: Ignores the block number from the response

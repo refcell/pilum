@@ -237,8 +237,6 @@ describe('Multicalls', () => {
     // Method Call
     const res = await multicall.call(multicalls);
 
-    console.log('Multicall2 test result:', res.results[0].methodResults);
-
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
@@ -269,8 +267,6 @@ describe('Multicalls', () => {
 
     // Method Call
     const res = await multicall.call(multicalls);
-
-    console.log(res);
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);

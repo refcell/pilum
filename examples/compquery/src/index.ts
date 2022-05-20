@@ -1,4 +1,5 @@
-import calculateExchangeRate from 'ExchangeRate';
+import calculateBlockAPY from './BlockAPY';
+import calculateExchangeRate from './ExchangeRate';
 
 // Top-level Script Execution
 (async () => {
@@ -14,7 +15,20 @@ import calculateExchangeRate from 'ExchangeRate';
   const amount = await calculateExchangeRate(CDAI_NAME, DAI_NAME);
   console.log(`1 ${CDAI_NAME} can be redeemed for ${amount} ${DAI_NAME}`);
 
-  // TODO: Calculate APY Using Rate Per Block
+  // Amortize Supply and Borrow Rates Per Block to calculate APY
+  const apys = await calculateBlockAPY();
+  console.log(
+    `Amortized ETH Supply APY: ${(
+      (apys.supply.toNumber() / apys.base_unit) * 100.0 -
+      100.0
+    ).toFixed(4)}%`
+  );
+  console.log(
+    `Amortized ETH Borrow APY: ${(
+      (apys.borrow.toNumber() / apys.base_unit) * 100.0 -
+      100.0
+    ).toFixed(4)}%`
+  );
 
   return;
 })();
