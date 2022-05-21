@@ -3,8 +3,8 @@
   "description": "Extremely Minimal Multicall3 Typescript Library",
   "author": "https://github.com/abigger87",
   "license": "AGPL-3.0-only",
-  "version": "1.9.0",
-  "repository": "https://github.com/abigger87/pilum",
+  "version": "1.10.0",
+  "repository": "git://github.com/abigger87/pilum.git",
   "publishConfig": {
     "@abigger87:registry": "https://npm.pkg.github.com"
   },
