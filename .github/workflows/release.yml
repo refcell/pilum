@@ -1,8 +1,6 @@
 name: Release
 
-on:
-  release:
-    types: [published]
+on: [push]
 
 jobs:
   publish-gpr:
@@ -19,7 +17,7 @@ jobs:
       - run: npm install
       - run: npm run prepublish
       - name: Modify package.json contents for github registry
-        run: ./.github/scripts/release.sh
+        run: ./.github/scripts/release.sh package.json
         shell: bash
       - run: npm publish --@abigger87:registry=https://npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}
         env:
