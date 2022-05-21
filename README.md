@@ -2,7 +2,7 @@
 
 # pilum • [![tests](https://github.com/abigger87/pilum/actions/workflows/tests.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/tests.yml) [![publish](https://github.com/abigger87/pilum/actions/workflows/publish.yml/badge.svg)](https://github.com/abigger87/pilum/actions/workflows/publish.yml) ![License](https://img.shields.io/github/license/abigger87/pilum)  ![Package Version](https://img.shields.io/github/package-json/v/abigger87/pilum)
 
-Lightweight, Modern Typescript Library for **[Multicall3](https://github.com/mds1/multicall)** published on [npm](https://www.npmjs.com/package/pilum).
+Lightweight, Modern **[Multicall3](https://github.com/mds1/multicall)** Typescript Library published on [npm](https://www.npmjs.com/package/pilum).
 
 Multicall3 flexibly aggregates results from multiple smart contract function calls. By allowing the caller to specify an additional parameter per call (a boolean for if the call should be required to succeed), the call results _can_ be aggregated gracefully on a per-call basis.
 
