@@ -6,7 +6,7 @@
   "version": "1.12.0",
   "repository": "git://github.com/abigger87/pilum.git",
   "publishConfig": {
-    "@abigger87:registry": "https://npm.pkg.github.com"
+    "name": "@abigger:pilum"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
