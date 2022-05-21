@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git+https://github.com/abigger87/pilum.git"
   },
+  "publishConfig": {
+    "@abigger87:registry": "https://npm.pkg.github.com"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
@@ -19,7 +22,8 @@
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "tsc": "tsc --noEmit",
     "lint": "eslint --ext .js,.ts .",
-    "lint:fix": "eslint --ext .js,.ts . --fix"
+    "lint:fix": "eslint --ext .js,.ts . --fix",
+    "size": "tarball=\"$(npm pack .)\"; wc -c \"${tarball}\"; tar tvf \"${tarball}\"; rm \"${tarball}\";"
   },
   "devDependencies": {
     "@types/jest": "^27.5.1",
