@@ -132,7 +132,8 @@ Any and all pull requests are welcome and highly appreciated!
 
 ```ml
 examples
-├─ uniquery — Uniswap Queries
+├─ uniquery — Minimal Queries for Uniswap pool statistics
+├─ compquery — Multicalled Compound Protocol Math Queries
 src
 ├─ abis/ — Multicall Contract ABIs
 ├─ models/ — Multicall Class Argument and Response Types

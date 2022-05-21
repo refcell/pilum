@@ -7,6 +7,6 @@ A collection of examples that demonstrate using `pilum` practically.
 ```ml
 uniquery
 ├─ Minimal Queries for on-chain Uniswap pool statistics.
-compound
+compquery
 └─ Multicalled Compound Protocol Math Queries.
 ```
