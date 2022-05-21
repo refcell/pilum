@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-jsonFile=$1;
-
-node > ${jsonFile} <<EOF
+node > package.json <<EOF
 //Read data
-var data = require('./${jsonFile}');
+var data = require('./package.json');
 
 //Manipulate data
-delete data.key3
 data.name = '@abigger87/pilum';
 data.publishConfig.registry = 'https://npm.pkg.github.com';
 
