@@ -6,7 +6,7 @@ import {
   AggregatedCall,
   AggregateFullResponse,
   ContractCall,
-} from 'models';
+} from './models';
 
 type Address = string;
 

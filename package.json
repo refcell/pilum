@@ -3,7 +3,7 @@
   "description": "Extremely Minimal Multicall3 Typescript Library",
   "author": "https://github.com/abigger87",
   "license": "AGPL-3.0-only",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/abigger87/pilum.git"
@@ -15,7 +15,7 @@
     "ethers": "^5.6.4"
   },
   "scripts": {
-    "prepublish": "tsc",
+    "prepublish": "tsc && pkgfiles",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "tsc": "tsc --noEmit",
     "lint": "eslint --ext .js,.ts .",
@@ -29,6 +29,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^28.1.0",
+    "pkgfiles": "^2.3.2",
     "prettier": "^2.6.2",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",

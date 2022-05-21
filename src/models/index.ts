@@ -4,7 +4,6 @@ import { AggregateFullResponse } from './AggregateFullResponse';
 import { AggregatedCall } from './AggregatedCall';
 import { ContractCall } from './ContractCall';
 import { SingleCall } from './SingleCall';
-import { SingleResult } from './SingleResult';
 
 // Re-exports
 export {
@@ -13,6 +12,5 @@ export {
   AggregatedCall,
   ContractCall,
   SingleCall,
-  SingleResult,
 };
 export default {};
