@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "pilum": "^1.9.0"
+    "pilum": "^1.16.0"
   },
   "scripts": {
     "query": "ts-node ./src/index.ts"
