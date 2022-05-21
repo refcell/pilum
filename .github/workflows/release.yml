@@ -1,6 +1,8 @@
 name: Release
 
-# on: [push]
+on:
+  release:
+    types: [published]
 
 jobs:
   publish-gpr:
@@ -16,6 +18,6 @@ jobs:
           registry-url: https://npm.pkg.github.com/
       - run: npm install
       - run: npm run prepublish
-      - run: npm publish --registry=https://npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}
+      - run: npm publish --@abigger87:registry=https://npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
