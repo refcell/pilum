@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+ls -lsa
+
 node > package.json <<EOF
 //Read data
 var data = require('./package.json');
