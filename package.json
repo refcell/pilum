@@ -4,10 +4,7 @@
   "author": "https://github.com/abigger87",
   "license": "AGPL-3.0-only",
   "version": "1.9.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/abigger87/pilum.git"
-  },
+  "repository": "https://github.com/abigger87/pilum",
   "publishConfig": {
     "@abigger87:registry": "https://npm.pkg.github.com"
   },
