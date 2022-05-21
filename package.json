@@ -5,6 +5,9 @@
   "license": "AGPL-3.0-only",
   "version": "1.16.0",
   "repository": "git://github.com/abigger87/pilum.git",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
