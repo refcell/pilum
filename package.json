@@ -1,12 +1,12 @@
 {
-  "name": "@abigger87/pilum",
+  "name": "pilum",
   "description": "Extremely Minimal Multicall3 Typescript Library",
   "author": "https://github.com/abigger87",
   "license": "AGPL-3.0-only",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "repository": "git://github.com/abigger87/pilum.git",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
