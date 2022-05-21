@@ -1,27 +1,7 @@
 #!/usr/bin/env bash
 
-ls -lsa
-
-node <<EOF
-// Read data
-var data = require('./package.json');
-console.log('Reade package.json');
-console.log(data);
-
-// Update package registry info
-data.name = '@abigger87/pilum';
-data.publishConfig.registry = 'https://npm.pkg.github.com';
-
-console.log('Updated variables in package.json');
-
-// Output data
-console.log(JSON.stringify(data));
-
-EOF
-
-
-
-node > package.json <<EOF
+# Generate a new package.json with github registry config
+node > new_package.json <<EOF
 // Read data
 var data = require('./package.json');
 
@@ -33,3 +13,7 @@ data.publishConfig.registry = 'https://npm.pkg.github.com';
 console.log(JSON.stringify(data));
 
 EOF
+
+# Replace the package.json contents
+cat new_package.json > package.json
+
