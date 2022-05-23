@@ -8,7 +8,7 @@ const config: Config.InitialOptions = {
   coverageProvider: 'v8',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testMatch: ['**/tests/*.test.ts'],
+  testMatch: ['**/*.test.ts'],
 };
 
 export default config;

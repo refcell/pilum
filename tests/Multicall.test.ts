@@ -192,6 +192,27 @@ describe('Multicalls', () => {
     );
   });
 
+  it('Statically Multicalls With Options', async () => {
+    // Call the Multicall associated functions directly
+    const res = await Multicall.call(multicalls, { network: 5 });
+
+    // Expect results to equal the number of calls we made
+    expect(res.results.length).toBe(multicalls.length);
+
+    // Expect each call to have length 1
+    res.results.map((result) => expect(result.methodResults.length).toBe(1));
+
+    // Expect each call to be successful
+    res.results.map((result) =>
+      expect(result.methodResults[0].returnData[0]).toBe(true)
+    );
+    res.results.map((result) =>
+      expect(
+        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
+      ).toBeGreaterThan(0)
+    );
+  });
+
   it('Multicalls With Recommended Instantiation', async () => {
     // Use the default provider ;P
     const provider = ethers.getDefaultProvider();
