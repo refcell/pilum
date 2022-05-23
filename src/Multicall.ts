@@ -6,9 +6,10 @@ import {
   AggregatedCall,
   AggregateFullResponse,
   ContractCall,
+  Options,
 } from './models';
-
-type Address = string;
+import abiMap, { Mapping } from 'AbiMapper';
+import { Address, Network } from './types';
 
 // Multicall - A library for calling multiple contracts in aggregate
 export class Multicall {
@@ -21,7 +22,7 @@ export class Multicall {
   constructor(options?: {
     address?: Address;
     provider?: ethers.providers.Provider | ethers.Signer;
-    network?: number;
+    network?: Network;
   }) {
     // Extract the network or default to 1
     this.chainId = options && options.network ? options.network : 1;
@@ -251,13 +252,14 @@ export class Multicall {
   }
 
   public static async call(
-    calls: ContractCall[] | ContractCall
+    calls: ContractCall[] | ContractCall,
+    options?: Options
   ): Promise<AggregateFullResponse> {
     // Encode the calls
     const encoded: AggregatedCall[] = Multicall.encode(calls);
 
     // Craft default configuration
-    const abi: object = multicall3;
+    const abi: Mapping = abiMap(options);
     const multicall3Address: string = networks['1']['multicall3'];
     const provider: ethers.providers.Provider | ethers.Signer =
       ethers.getDefaultProvider();
