@@ -12,7 +12,11 @@ import {
 import { abiMap, Mapping } from './AbiMapper';
 import { Interface } from '@ethersproject/abi';
 
-// Multicall - A library for calling multiple contracts in aggregate
+/**
+ * @class Multicall
+ * @classdesc A library for calling multiple contracts in aggregate
+ * @author Andreas Bigger <andreas@nascent.xyz>
+ */
 export class Multicall {
   public provider: ethers.providers.Provider | ethers.Signer;
   public chainId: number;
@@ -21,6 +25,11 @@ export class Multicall {
   public abi: object;
   public interface: Interface;
 
+  /**
+   * @notice Constructs a Multicall instance
+   * @param {Options} options Options for creating the Multicall instance
+   * @returns {Multicall} An instance of Multicall
+   */
   constructor(options?: Options) {
     // Extract the network or default to 1
     this.chainId = options && options.network ? options.network : 1;
@@ -49,6 +58,11 @@ export class Multicall {
     this.interface = new ethers.utils.Interface(JSON.stringify(this.abi));
   }
 
+  /**
+   * @notice Encodes calls using their provided contract abis
+   * @param {ContractCall[]} calls An array of raw contract calls that need to be encoded with the provided contract abis
+   * @returns {EncodedCall[]} An array of encoded calls
+   */
   public static encode(calls: ContractCall[] | ContractCall): EncodedCall[] {
     const callArray: ContractCall[] = !Array.isArray(calls) ? [calls] : calls;
     const encodedCalls: EncodedCall[] = [];
@@ -68,7 +82,11 @@ export class Multicall {
     return encodedCalls;
   }
 
-  // Constructs an ethers Contract
+  /**
+   * @notice Constructs an ethers Contract
+   * @param {ContractCall[]} calls An array of raw contract calls that need to be encoded with the provided contract abis
+   * @returns {Contract} An ethers Contract instance
+   */
   public static getContract(
     address: string,
     abi: object,
@@ -83,7 +101,12 @@ export class Multicall {
     return new ethers.Contract(address, contractInterface, provider);
   }
 
-  // Explodes an Aggregate Response into the Full Response
+  /**
+   * @notice Explodes a call response into an original call + response object
+   * @param {RawCallResponse} callres The call response from the multicall contract
+   * @param {EncodedCall[]} calls The original calls that were sent to the multicall contract
+   * @returns {MulticallResponse} A response object containing the original calls and their responses
+   */
   public static explode(
     callres: RawCallResponse,
     calls: EncodedCall[]
@@ -107,8 +130,12 @@ export class Multicall {
     return exploded;
   }
 
-  // Aggregate3 Call on Multicall3 Contract
-  // Builds response from Multicall3 specific response format
+  /**
+   * @notice Calls the Multicall3 `aggregate3` function with the provided calls
+   * @param {EncodedCall[]} calls An array of encoded contract calls
+   * @param {Contract} contract The Multicall contract
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public static async aggregate3(
     calls: EncodedCall[],
     contract: Contract
@@ -132,7 +159,12 @@ export class Multicall {
     return Multicall.explode(res, calls);
   }
 
-  // tryAggregate Call on Multicall2 or Multicall3 Contract
+  /**
+   * @notice Calls the Multicall2 `tryAggregate` function with the provided calls
+   * @param {EncodedCall[]} calls An array of encoded contract calls
+   * @param {Contract} contract The Multicall contract
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public static async tryAggregate(
     calls: EncodedCall[],
     contract: Contract
@@ -162,7 +194,12 @@ export class Multicall {
     return Multicall.explode(res, calls);
   }
 
-  // tryAggregate Call on Multicall2 or Multicall3 Contract
+  /**
+   * @notice Calls the Multicall `aggregate` function with the provided calls
+   * @param {EncodedCall[]} calls An array of encoded contract calls
+   * @param {Contract} contract The Multicall contract
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public static async aggregate(
     calls: EncodedCall[],
     contract: Contract
@@ -187,6 +224,14 @@ export class Multicall {
     return Multicall.explode(callres, calls);
   }
 
+  /**
+   * @notice Executes the Multicall, on the respective Multicall 1, 2, or 3 contracts
+   * @param {object} abi The Multicall ABI
+   * @param {string} multicall The Multicall contract address
+   * @param {ethers.providers.Provider | ethers.Signer} provider The ethers provider to send the multicall to
+   * @param {EncodedCall[]} calls An array of encoded contract calls
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public static async execute(
     abi: object,
     multicall: string,
@@ -221,6 +266,13 @@ export class Multicall {
     }
   }
 
+  /**
+   * @notice Aggregates a list of calls into a single Multicall and returns the response
+   * @notice Since this method is static, a Multicall does not need to be instantiated
+   * @param {ContractCall[] | ContractCall} calls An array of contract calls
+   * @param {Options} options Optional Multicall parameters
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public static async call(
     calls: ContractCall[] | ContractCall,
     options?: Options
@@ -241,6 +293,12 @@ export class Multicall {
     return await Multicall.execute(abi, address, provider, encoded);
   }
 
+  /**
+   * @notice Aggregates a list of calls into a single Multicall and returns the response
+   * @param {ContractCall[] | ContractCall} calls An array of contract calls
+   * @param {Options} options Optional Multicall parameters
+   * @returns {Promise<MulticallResponse>} A promise that resolves to the multicall response
+   */
   public async call(
     calls: ContractCall[] | ContractCall,
     options?: Options
