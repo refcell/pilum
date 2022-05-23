@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import { Multicall } from 'pilum';
+import { ContractCall, Multicall } from 'pilum';
 import { collectCTokenAddresses } from './Collect';
 
 // This script calculates the price of Token A in underlying Token B
@@ -11,11 +11,11 @@ import { collectCTokenAddresses } from './Collect';
 // 4. Calculate ratio of 1 Token A to Token B
 
 // Define the calls to be queried with multicall
-const craftCalls = (tokena: string, tokenb: string) => [
+const craftCalls = (tokena: string, tokenb: string): ContractCall[] => [
   // Get the number of underlying decimals of token b
   {
     reference: 'decimals',
-    contractAddress: tokenb,
+    address: tokenb,
     abi: [
       {
         name: 'decimals',
@@ -29,19 +29,14 @@ const craftCalls = (tokena: string, tokenb: string) => [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'decimals',
-        method: 'decimals',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'decimals',
+    params: [],
+    value: 0,
   },
   // Get the current exchange rate of token a
   {
     reference: 'exchangeRate',
-    contractAddress: tokena,
+    address: tokena,
     abi: [
       {
         name: 'exchangeRateStored',
@@ -55,14 +50,9 @@ const craftCalls = (tokena: string, tokenb: string) => [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'exchangeRate',
-        method: 'exchangeRateStored',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'exchangeRateStored',
+    params: [],
+    value: 0,
   },
 ];
 
@@ -86,10 +76,10 @@ const calculateExchangeRate = async (tokena: string, tokenb: string) => {
 
   // Deconstruct decimals and exchange rate from results
   const underlyingDecimals: BigNumber = BigNumber.from(
-    results[0].methodResults[0].returnData[1]
+    results[0].returnData[1]
   );
   const exchangeRateStored: BigNumber = BigNumber.from(
-    results[1].methodResults[0].returnData[1]
+    results[1].returnData[1]
   );
 
   // Calculate the mantissa differential

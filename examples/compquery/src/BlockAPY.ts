@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import { Multicall } from 'pilum';
+import { ContractCall, Multicall } from 'pilum';
 import { collectCTokenAddresses } from './Collect';
 
 // This script calculates the supply and borrow apy per block for eth
@@ -17,11 +17,11 @@ const DAYS_PER_YEAR = BigNumber.from(365);
 const eth_addresses = collectCTokenAddresses('cETH');
 const CETH = eth_addresses['mainnet'];
 
-// Define the calls to be queried with multicall
-const calls = [
+/** @global Compound Calls to fetch the supply and borrow rates for cETH */
+const calls: ContractCall[] = [
   {
     reference: 'supply',
-    contractAddress: CETH,
+    address: CETH,
     abi: [
       {
         name: 'supplyRatePerBlock',
@@ -35,18 +35,13 @@ const calls = [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'supply',
-        method: 'supplyRatePerBlock',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'supplyRatePerBlock',
+    params: [],
+    value: 0,
   },
   {
     reference: 'borrow',
-    contractAddress: CETH,
+    address: CETH,
     abi: [
       {
         name: 'borrowRatePerBlock',
@@ -60,18 +55,16 @@ const calls = [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'borrow',
-        method: 'borrowRatePerBlock',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'borrowRatePerBlock',
+    params: [],
+    value: 0,
   },
 ];
 
-// Performs the Exchange Rate Calculation from tokena to the underlying tokenb
+/**
+ * @notice Calculates the supply and borrow apy per block for cETH
+ * @returns {object} The supply and borrow apy per block for cETH denominated in `base_unit`
+ */
 const calculateBlockAPY = async () => {
   // Instantiate a new Multicall
   const multicall = new Multicall();
@@ -80,12 +73,8 @@ const calculateBlockAPY = async () => {
   const { results } = await multicall.call(calls);
 
   // Deconstruct apys from the multicall results
-  const supplyApyPerBlock: BigNumber = BigNumber.from(
-    results[0].methodResults[0].returnData[1]
-  );
-  const borrowApyPerBlock = BigNumber.from(
-    results[1].methodResults[0].returnData[1]
-  );
+  const supplyApyPerBlock: BigNumber = BigNumber.from(results[0].returnData[1]);
+  const borrowApyPerBlock = BigNumber.from(results[1].returnData[1]);
 
   // Calculate the apys
   const supplyapy = BigNumber.from(1_000_000)

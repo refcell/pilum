@@ -53,7 +53,7 @@ const multicall = new Multicall({
 const calls: ContractCall[] = [
   {
     reference: 'blockNumCall',
-    contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
+    address: '0xcA11bde05977b3631167028862bE2a173976CA11',
     abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
     method: 'getBlockNumber',
     params: [],
@@ -80,7 +80,7 @@ import { Multicall, ContractCall } from 'pilum';
 const calls: ContractCall[] = [
   {
     reference: 'blockNumCall',
-    contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
+    address: '0xcA11bde05977b3631167028862bE2a173976CA11',
     abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
     method: 'getBlockNumber',
     params: [],

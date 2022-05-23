@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
-import { Multicall } from 'pilum';
+import { Multicall, ContractCall } from 'pilum';
 
 // Pre-configured Parameters
 const DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
@@ -7,11 +7,11 @@ const WETH9 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 const FEE = 3_000;
 const UNISWAP_V3_FACTORY = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
 
-// Define our factory calls
-const FACTORY_CALLS = [
+/** @global Uniswap V3 Factory Contract Calls */
+const FACTORY_CALLS: ContractCall[] = [
   {
     reference: 'getOwner',
-    contractAddress: UNISWAP_V3_FACTORY,
+    address: UNISWAP_V3_FACTORY,
     abi: [
       {
         name: 'owner',
@@ -26,18 +26,13 @@ const FACTORY_CALLS = [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'getOwner',
-        method: 'owner',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'owner',
+    params: [],
+    value: 0,
   },
   {
     reference: 'getPool',
-    contractAddress: UNISWAP_V3_FACTORY,
+    address: UNISWAP_V3_FACTORY,
     abi: [
       {
         name: 'getPool',
@@ -61,22 +56,17 @@ const FACTORY_CALLS = [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'getPool',
-        method: 'getPool',
-        params: [DAI, WETH9, FEE],
-        value: 0,
-      },
-    ],
+    method: 'getPool',
+    params: [DAI, WETH9, FEE],
+    value: 0,
   },
 ];
 
-// Pool Call Constructor
+/** @global Uniswap V3 Pool Contract Calls */
 const createPoolCalls = (address: string) => [
   {
     reference: 'liquidity',
-    contractAddress: address,
+    address: address,
     abi: [
       {
         name: 'liquidity',
@@ -90,18 +80,13 @@ const createPoolCalls = (address: string) => [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'liquidity',
-        method: 'liquidity',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'liquidity',
+    params: [],
+    value: 0,
   },
   {
     reference: 'fees',
-    contractAddress: address,
+    address: address,
     abi: [
       {
         name: 'protocolFees',
@@ -120,14 +105,9 @@ const createPoolCalls = (address: string) => [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'fees',
-        method: 'protocolFees',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'protocolFees',
+    params: [],
+    value: 0,
   },
 ];
 
@@ -140,13 +120,12 @@ const createPoolCalls = (address: string) => [
 
   // Deconstruct the factory owner
   const factory_owner_bn: string =
-    '0x' + results[0].methodResults[0].returnData[1].substring(26);
+    '0x' + results[0].returnData[1].substring(26);
   const factory_owner: string = ethers.utils.getAddress(factory_owner_bn);
   console.log(`Uniswap Factory ${UNISWAP_V3_FACTORY} Owner: ${factory_owner}`);
 
   // Deconstruct the pool
-  const pool: string =
-    '0x' + results[1].methodResults[0].returnData[1].substring(26);
+  const pool: string = '0x' + results[1].returnData[1].substring(26);
   const formatted_pool: string = ethers.utils.getAddress(pool);
   console.log(`
 POOL ${formatted_pool}
@@ -162,17 +141,13 @@ Fee: ${FEE}
   const { results: poolres } = await multicall.call(pool_calls);
 
   // Deconstruct the query results
-  const liquidity: BigNumber = BigNumber.from(
-    poolres[0].methodResults[0].returnData[1]
-  );
+  const liquidity: BigNumber = BigNumber.from(poolres[0].returnData[1]);
   try {
     console.log(`Pool Liquidity: ${liquidity.toNumber()}`);
   } catch (e) {
     console.log(`Pool Liquidity: ${liquidity}`);
   }
-  const fees: BigNumber = BigNumber.from(
-    poolres[1].methodResults[0].returnData[1]
-  );
+  const fees: BigNumber = BigNumber.from(poolres[1].returnData[1]);
   console.log(`Pool Fees: ${fees.toNumber()}`);
 
   return;
