@@ -5,4 +5,7 @@ export interface Options {
   address?: string;
   provider?: ethers.providers.Provider | ethers.Signer;
   network?: number;
+  // TODO
+  // returnBlockNumber?: boolean;
+  // returnBlockHash?: boolean;
 }

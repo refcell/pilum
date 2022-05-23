@@ -2,14 +2,14 @@ import { Contract, ContractInterface, ethers } from 'ethers';
 import { networks } from './networks';
 import { multicall1, multicall2, multicall3 } from './abis';
 import {
-  AggregateCallResponse,
-  AggregatedCall,
-  AggregateFullResponse,
+  MulticallResponse,
   ContractCall,
+  EncodedCall,
   Options,
+  RawCallResponse,
+  Address,
 } from './models';
 import { abiMap, Mapping } from './AbiMapper';
-import { Address } from './types';
 import { Interface } from '@ethersproject/abi';
 
 // Multicall - A library for calling multiple contracts in aggregate
@@ -49,27 +49,20 @@ export class Multicall {
     this.interface = new ethers.utils.Interface(JSON.stringify(this.abi));
   }
 
-  public static encode(calls: ContractCall[] | ContractCall): AggregatedCall[] {
-    const callray: ContractCall[] = !Array.isArray(calls) ? [calls] : calls;
-    const encodedCalls: AggregatedCall[] = [];
-    callray.forEach((call, index) => {
+  public static encode(calls: ContractCall[] | ContractCall): EncodedCall[] {
+    const callArray: ContractCall[] = !Array.isArray(calls) ? [calls] : calls;
+    const encodedCalls: EncodedCall[] = [];
+    callArray.forEach((call) => {
       // Grab each call's abi
-      const calliface = new ethers.utils.Interface(call.abi);
-      call.calls.forEach((method, calli) => {
-        // Encode the call
-        const encodedData = calliface.encodeFunctionData(
-          method.method,
-          method.params
-        );
-        // Push to the list of encoded calls
-        encodedCalls.push({
-          contractContextIndex: index,
-          contractMethodIndex: calli,
-          allowFailure: method.allowFailure || false,
-          target: call.contractAddress,
-          encodedData,
-        });
-      });
+      const callInterface = new ethers.utils.Interface(call.abi);
+      // Encode the call
+      const encodedData = callInterface.encodeFunctionData(
+        call.method,
+        call.params
+      );
+      // Push to the list of encoded calls
+      const newCall = { encodedData, ...call };
+      encodedCalls.push(newCall);
     });
 
     return encodedCalls;
@@ -91,57 +84,39 @@ export class Multicall {
   }
 
   // Explodes an Aggregate Response into the Full Response
-  public static explodeResponse(
-    res: AggregateCallResponse,
-    calls: AggregatedCall[]
-  ): AggregateFullResponse {
-    // Build the AggregateFullResponse from the Multicall3 Aggregate3Response
-    const a3Response: AggregateFullResponse = {
+  public static explode(
+    callres: RawCallResponse,
+    calls: EncodedCall[]
+  ): MulticallResponse {
+    // Build the final result
+    const exploded: MulticallResponse = {
+      blockNumber: callres.blockNumber,
+      blockHash: callres.blockHash,
       results: [],
     };
 
-    // Iterate over the return data
-    for (let i = 0; i < res.returnData.length; i++) {
-      // For existing contracts in the multicall, we can just append to the method results
-      const existingResponse = a3Response.results.find(
-        (c) => c.contractContextIndex === calls[i].contractContextIndex
-      );
-      if (existingResponse) {
-        existingResponse.methodResults.push({
-          blockHash: res.blockHash,
-          blockNumber: res.blockNumber,
-          returnData: res.returnData[i],
-          contractMethodIndex: calls[i].contractMethodIndex,
-        });
-      } else {
-        a3Response.results.push({
-          methodResults: [
-            {
-              blockHash: res.blockHash,
-              blockNumber: res.blockNumber,
-              returnData: res.returnData[i],
-              contractMethodIndex: calls[i].contractMethodIndex,
-            },
-          ],
-          contractContextIndex: calls[i].contractContextIndex,
-        });
-      }
-    }
+    // Map call responses to their original calls
+    exploded.results = callres.returnData.map((res: any, index: number) => {
+      return {
+        returnData: res,
+        ...calls[index],
+      };
+    });
 
     // Finally, return the full response
-    return a3Response;
+    return exploded;
   }
 
   // Aggregate3 Call on Multicall3 Contract
   // Builds response from Multicall3 specific response format
   public static async aggregate3(
-    calls: AggregatedCall[],
+    calls: EncodedCall[],
     contract: Contract
-  ): Promise<AggregateFullResponse> {
+  ): Promise<MulticallResponse> {
     // Construct Multicall3 Aggregate3 Calls
     const a3calls = calls.map((call) => {
       return {
-        target: call.target,
+        target: call.address,
         allowFailure: call.allowFailure,
         callData: call.encodedData,
       };
@@ -150,22 +125,22 @@ export class Multicall {
     const callres = await contract.callStatic.aggregate3(a3calls);
 
     // Call Multicall3 aggregate3 method and get back the returnData[]
-    const res: AggregateCallResponse = {
+    const res: RawCallResponse = {
       returnData: callres,
     };
 
-    return Multicall.explodeResponse(res, calls);
+    return Multicall.explode(res, calls);
   }
 
   // tryAggregate Call on Multicall2 or Multicall3 Contract
   public static async tryAggregate(
-    calls: AggregatedCall[],
+    calls: EncodedCall[],
     contract: Contract
-  ): Promise<AggregateFullResponse> {
+  ): Promise<MulticallResponse> {
     // Map calls to the Multicall Call Struct format
     const mcalls = calls.map((call) => {
       return {
-        target: call.target,
+        target: call.address,
         callData: call.encodedData,
       };
     });
@@ -178,24 +153,24 @@ export class Multicall {
       mcalls
     );
 
-    const res: AggregateCallResponse = {
+    const res: RawCallResponse = {
       blockNumber: callres[0],
       blockHash: callres[1],
       returnData: callres[2],
     };
 
-    return Multicall.explodeResponse(res, calls);
+    return Multicall.explode(res, calls);
   }
 
   // tryAggregate Call on Multicall2 or Multicall3 Contract
   public static async aggregate(
-    calls: AggregatedCall[],
+    calls: EncodedCall[],
     contract: Contract
-  ): Promise<AggregateFullResponse> {
+  ): Promise<MulticallResponse> {
     // Map calls to the Multicall Call Struct format
     const mcalls = calls.map((call) => {
       return {
-        target: call.target,
+        target: call.address,
         callData: call.encodedData,
       };
     });
@@ -203,26 +178,22 @@ export class Multicall {
     // Statically call on the multicall contract
     const res = await contract.callStatic.aggregate(mcalls);
 
-    // Translate the raw response into an aggregate3 and tryAggregate response
-    // NOTE: Ignores the block number from the response
-    const aggregatedResponse: AggregateCallResponse = {
+    // Translate the raw response into our response format
+    const callres: RawCallResponse = {
       blockNumber: res[0],
       returnData: res[1],
     };
 
-    return Multicall.explodeResponse(aggregatedResponse, calls);
+    return Multicall.explode(callres, calls);
   }
 
   public static async execute(
     abi: object,
     multicall: string,
     provider: ethers.providers.Provider | ethers.Signer,
-    calls: AggregatedCall[]
-  ): Promise<AggregateFullResponse> {
+    calls: EncodedCall[]
+  ): Promise<MulticallResponse> {
     const contract: Contract = Multicall.getContract(multicall, abi, provider);
-
-    // TODO: make this "adaptive" by allowing calls to not specify graceful/allowFailure param
-    // TODO: in this case, multicalls should fall back to backwards-compatible method
 
     // If the multicall contract has an aggregate3 method, use it
     if (
@@ -253,9 +224,9 @@ export class Multicall {
   public static async call(
     calls: ContractCall[] | ContractCall,
     options?: Options
-  ): Promise<AggregateFullResponse> {
+  ): Promise<MulticallResponse> {
     // Encode the calls
-    const encoded: AggregatedCall[] = Multicall.encode(calls);
+    const encoded: EncodedCall[] = Multicall.encode(calls);
 
     // Craft default configuration
     const map: Mapping = abiMap(options);
@@ -273,9 +244,9 @@ export class Multicall {
   public async call(
     calls: ContractCall[] | ContractCall,
     options?: Options
-  ): Promise<AggregateFullResponse> {
+  ): Promise<MulticallResponse> {
     // Encode the calls
-    const encoded: AggregatedCall[] = Multicall.encode(calls);
+    const encoded: EncodedCall[] = Multicall.encode(calls);
 
     // Craft custom configuration
     const map: Mapping =

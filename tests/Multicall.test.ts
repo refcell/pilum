@@ -2,12 +2,13 @@ import { BigNumber, ethers } from 'ethers';
 import { Multicall } from '../src/Multicall';
 import { multicall1, multicall3 } from '../src/abis';
 import { networks } from '../src/networks';
+import { ContractCall, MulticallResponse } from '../src/models';
 
 // Globally define calls
-const calls = [
+const calls: ContractCall[] = [
   {
-    reference: 'multicall3',
-    contractAddress: networks['1']['multicall3'],
+    reference: 'blockNumCall',
+    address: networks['1']['multicall3'],
     abi: [
       {
         name: 'getBlockNumber',
@@ -22,14 +23,9 @@ const calls = [
         ],
       },
     ],
-    calls: [
-      {
-        reference: 'blockNumCall',
-        method: 'getBlockNumber',
-        params: [],
-        value: 0,
-      },
-    ],
+    method: 'getBlockNumber',
+    params: [],
+    value: 0,
   },
 ];
 
@@ -81,16 +77,13 @@ describe('Initialization', () => {
 describe('Single Calls', () => {
   it('Can Call Without Instantiation', async () => {
     // Call the Multicall associated functions directly
-    const call_results = await Multicall.call(calls);
+    const call_results: MulticallResponse = await Multicall.call(calls);
 
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
-    expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
+    expect(call_results.results[0].returnData[0]).toBe(true);
     expect(
-      BigNumber.from(
-        call_results.results[0].methodResults[0].returnData[1]
-      ).toNumber()
+      BigNumber.from(call_results.results[0].returnData[1]).toNumber()
     ).toBeGreaterThan(0);
   });
 
@@ -106,16 +99,13 @@ describe('Single Calls', () => {
     });
 
     // Method Call
-    const call_results = await multicall.call(calls);
+    const call_results: MulticallResponse = await multicall.call(calls);
 
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
-    expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
+    expect(call_results.results[0].returnData[0]).toBe(true);
     expect(
-      BigNumber.from(
-        call_results.results[0].methodResults[0].returnData[1]
-      ).toNumber()
+      BigNumber.from(call_results.results[0].returnData[1]).toNumber()
     ).toBeGreaterThan(0);
   });
 
@@ -131,13 +121,12 @@ describe('Single Calls', () => {
     });
 
     // Method Call
-    const call_results = await multicall.call(calls);
+    const call_results: MulticallResponse = await multicall.call(calls);
 
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
-    expect(call_results.results[0].methodResults.length).toBe(1);
-    expect(call_results.results[0].methodResults[0].returnData[0]).toBe(true);
-    const blockNumber = call_results.results[0].methodResults[0].blockNumber;
+    expect(call_results.results[0].returnData[0]).toBe(true);
+    const blockNumber = call_results.blockNumber;
     if (blockNumber) {
       expect(blockNumber.toNumber()).toBeGreaterThan(0);
     }
@@ -155,12 +144,11 @@ describe('Single Calls', () => {
     });
 
     // Method Call
-    const call_results = await multicall.call(calls);
+    const call_results: MulticallResponse = await multicall.call(calls);
 
     // Expect Successful Calls
     expect(call_results.results.length).toBe(1);
-    expect(call_results.results[0].methodResults.length).toBe(1);
-    const blockNumber = call_results.results[0].methodResults[0].blockNumber;
+    const blockNumber = call_results.blockNumber;
     if (blockNumber) {
       expect(blockNumber.toNumber()).toBeGreaterThan(0);
     }
@@ -173,43 +161,31 @@ const multicalls = [...calls, ...calls, ...calls];
 describe('Multicalls', () => {
   it('Statically Multicalls', async () => {
     // Call the Multicall associated functions directly
-    const res = await Multicall.call(multicalls);
+    const res: MulticallResponse = await Multicall.call(multicalls);
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
-    // Expect each call to have length 1
-    res.results.map((result) => expect(result.methodResults.length).toBe(1));
-
     // Expect each call to be successful
+    res.results.map((result) => expect(result.returnData[0]).toBe(true));
     res.results.map((result) =>
-      expect(result.methodResults[0].returnData[0]).toBe(true)
-    );
-    res.results.map((result) =>
-      expect(
-        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
-      ).toBeGreaterThan(0)
+      expect(BigNumber.from(result.returnData[1]).toNumber()).toBeGreaterThan(0)
     );
   });
 
   it('Statically Multicalls With Options', async () => {
     // Call the Multicall associated functions directly
-    const res = await Multicall.call(multicalls, { network: 5 });
+    const res: MulticallResponse = await Multicall.call(multicalls, {
+      network: 5,
+    });
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
-    // Expect each call to have length 1
-    res.results.map((result) => expect(result.methodResults.length).toBe(1));
-
     // Expect each call to be successful
+    res.results.map((result) => expect(result.returnData[0]).toBe(true));
     res.results.map((result) =>
-      expect(result.methodResults[0].returnData[0]).toBe(true)
-    );
-    res.results.map((result) =>
-      expect(
-        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
-      ).toBeGreaterThan(0)
+      expect(BigNumber.from(result.returnData[1]).toNumber()).toBeGreaterThan(0)
     );
   });
 
@@ -225,22 +201,15 @@ describe('Multicalls', () => {
     });
 
     // Method Call
-    const res = await multicall.call(multicalls);
+    const res: MulticallResponse = await multicall.call(multicalls);
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
-    // Expect each call to have length 1
-    res.results.map((result) => expect(result.methodResults.length).toBe(1));
-
     // Expect each call to be successful
+    res.results.map((result) => expect(result.returnData[0]).toBe(true));
     res.results.map((result) =>
-      expect(result.methodResults[0].returnData[0]).toBe(true)
-    );
-    res.results.map((result) =>
-      expect(
-        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
-      ).toBeGreaterThan(0)
+      expect(BigNumber.from(result.returnData[1]).toNumber()).toBeGreaterThan(0)
     );
   });
 
@@ -256,22 +225,15 @@ describe('Multicalls', () => {
     });
 
     // Method Call
-    const res = await multicall.call(multicalls);
+    const res: MulticallResponse = await multicall.call(multicalls);
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
-    // Expect each call to have length 1
-    res.results.map((result) => expect(result.methodResults.length).toBe(1));
-
     // Expect each call to be successful
+    res.results.map((result) => expect(result.returnData[0]).toBe(true));
     res.results.map((result) =>
-      expect(result.methodResults[0].returnData[0]).toBe(true)
-    );
-    res.results.map((result) =>
-      expect(
-        BigNumber.from(result.methodResults[0].returnData[1]).toNumber()
-      ).toBeGreaterThan(0)
+      expect(BigNumber.from(result.returnData[1]).toNumber()).toBeGreaterThan(0)
     );
   });
 
@@ -287,20 +249,18 @@ describe('Multicalls', () => {
     });
 
     // Method Call
-    const res = await multicall.call(multicalls);
+    const res: MulticallResponse = await multicall.call(multicalls);
 
     // Expect results to equal the number of calls we made
     expect(res.results.length).toBe(multicalls.length);
 
-    // Expect each call to have length 1
-    res.results.map((result) => expect(result.methodResults.length).toBe(1));
-
     // Expect each call to be successful
-    res.results.map((result) => {
-      const blockNumber = result.methodResults[0].blockNumber;
-      if (blockNumber) {
-        expect(blockNumber.toNumber()).toBeGreaterThan(0);
-      }
-    });
+    res.results.map((result) =>
+      expect(BigNumber.from(result.returnData).toNumber()).toBeGreaterThan(0)
+    );
+    const blockNumber = res.blockNumber;
+    if (blockNumber) {
+      expect(blockNumber.toNumber()).toBeGreaterThan(0);
+    }
   });
 });
