@@ -96,7 +96,7 @@ const abiMap = (options?: Options): Mapping => {
   // If we have options
   if (options) {
     // Deconstruct our option parameters
-    const { multicall: address, network } = options;
+    const { address, network } = options;
 
     if (network) {
       const networkObject: object = networks[network.toString()];

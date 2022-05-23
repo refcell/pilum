@@ -8,8 +8,9 @@ import {
   ContractCall,
   Options,
 } from './models';
-import abiMap, { Mapping } from 'AbiMapper';
-import { Address, Network } from './types';
+import { abiMap, Mapping } from './AbiMapper';
+import { Address } from './types';
+import { Interface } from '@ethersproject/abi';
 
 // Multicall - A library for calling multiple contracts in aggregate
 export class Multicall {
@@ -18,12 +19,9 @@ export class Multicall {
   public network: object;
   public multicall: string;
   public abi: object;
+  public interface: Interface;
 
-  constructor(options?: {
-    address?: Address;
-    provider?: ethers.providers.Provider | ethers.Signer;
-    network?: Network;
-  }) {
+  constructor(options?: Options) {
     // Extract the network or default to 1
     this.chainId = options && options.network ? options.network : 1;
     // If we have a network but not a provider, let's get the default provider for the given network
@@ -48,6 +46,7 @@ export class Multicall {
         this.multicall = this.network['multicall2'];
       }
     }
+    this.interface = new ethers.utils.Interface(JSON.stringify(this.abi));
   }
 
   public static encode(calls: ContractCall[] | ContractCall): AggregatedCall[] {
@@ -259,27 +258,42 @@ export class Multicall {
     const encoded: AggregatedCall[] = Multicall.encode(calls);
 
     // Craft default configuration
-    const abi: Mapping = abiMap(options);
-    const multicall3Address: string = networks['1']['multicall3'];
+    const map: Mapping = abiMap(options);
+    const abi: object = map.abi;
+    const address: Address = map.address;
     const provider: ethers.providers.Provider | ethers.Signer =
-      ethers.getDefaultProvider();
+      options && options.provider
+        ? options.provider
+        : ethers.getDefaultProvider();
 
     // Execute and return the calls
-    return await Multicall.execute(abi, multicall3Address, provider, encoded);
+    return await Multicall.execute(abi, address, provider, encoded);
   }
 
   public async call(
-    calls: ContractCall[] | ContractCall
+    calls: ContractCall[] | ContractCall,
+    options?: Options
   ): Promise<AggregateFullResponse> {
     // Encode the calls
     const encoded: AggregatedCall[] = Multicall.encode(calls);
 
+    // Craft custom configuration
+    const map: Mapping =
+      options && (options.address || options.network)
+        ? abiMap(options)
+        : {
+            found: false,
+            abi: this.abi,
+            address: this.multicall,
+            network: this.chainId,
+            interface: this.interface,
+          };
+    const abi: object = map.abi;
+    const address: Address = map.address;
+    const provider: ethers.providers.Provider | ethers.Signer =
+      options && options.provider ? options.provider : this.provider;
+
     // Execute and return the calls
-    return await Multicall.execute(
-      this.abi,
-      this.multicall,
-      this.provider,
-      encoded
-    );
+    return await Multicall.execute(abi, address, provider, encoded);
   }
 }
