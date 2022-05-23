@@ -1,5 +1,5 @@
 import { networks } from '../src/networks';
-import { Address, Mapping } from '../src/types';
+import { Address, Mapping } from '../src/models';
 import {
   abiMap,
   constructWithAddress,

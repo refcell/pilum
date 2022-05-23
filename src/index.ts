@@ -1,3 +1,3 @@
 export { Multicall } from './Multicall';
-export * from './types';
+export * from './models';
 export * from './AbiMapper';

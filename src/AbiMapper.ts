@@ -1,8 +1,7 @@
 import { Interface } from '@ethersproject/abi';
 import { multicall1, multicall2, multicall3 } from './abis';
-import { Options } from './models';
+import { Options, Address, Mapping, Network } from './models';
 import { networks } from './networks';
-import { Address, Mapping, Network } from './types';
 
 // Checks if the provided address is a valid multicall address in our network definitions
 const constructWithAddress = (address: Address): Mapping => {

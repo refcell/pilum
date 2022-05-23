@@ -37,7 +37,7 @@ Since `pilum` makes an RPC call to a Multicall contract, we need to use a provid
 
 ```js
 import { ethers } from 'ethers';
-import { Multicall } from 'pilum';
+import { Multicall, ContractCall } from 'pilum';
 
 // Create a custom provider
 const provider = new ethers.providers.JsonRpcProvider(
@@ -50,12 +50,14 @@ const multicall = new Multicall({
 });
 
 // Define our calls
-const calls = [
+const calls: ContractCall[] = [
   {
-    reference: 'multicall3',
+    reference: 'blockNumCall',
     contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
     abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
-    calls: [{ reference: 'blockNumCall', method: 'getBlockNumber', params: [], value: 0 }]
+    method: 'getBlockNumber',
+    params: [],
+    value: 0,
   }
 ];
 
@@ -72,16 +74,17 @@ console.log(results);
 **Not Recommended** (due to RPC unreliability).
 
 ```js
-import { ethers } from 'ethers';
-import { Multicall } from 'pilum';
+import { Multicall, ContractCall } from 'pilum';
 
 // Define our calls
-const calls = [
+const calls: ContractCall[] = [
   {
-    reference: 'multicall3',
+    reference: 'blockNumCall',
     contractAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
     abi: [ { name: 'getBlockNumber', type: 'function', stateMutability: 'view', inputs: [], outputs: [ { name: 'blockNumber', type: 'uint256' }] } ],
-    calls: [{ reference: 'blockNumCall', method: 'getBlockNumber', params: [], value: 0 }]
+    method: 'getBlockNumber',
+    params: [],
+    value: 0,
   }
 ];
 
@@ -90,6 +93,24 @@ const { results } = await Multicall.call(calls);
 
 // Print the call result
 console.log(results);
+```
+
+
+#### Multicall Options
+
+Let's say you instantiated a multicall instance in your code, but later on want to multicall on a different network or to a different multicall address, without instantiating a new multicall instance.
+
+`pilum` provides a flexible way to specify these parameters when executing a call. This is done by adding an optional `options` parameter to both the static (zero-config) and class-level `call` method.
+
+To specify these parameters, execute a call with an additional object as the last parameter.
+
+```typescript
+const { results } = await Multicall.call(calls, {
+  provider: provider,
+  abi: <YOUR_MULTICALL_ABI_OBJECT>,
+  address: '<YOUR-MULTICALL-ADDRESS>',
+  network: 5, // Any network id supported by ethers, here 5 is the Ethereum Goerli Testnet
+});
 ```
 
 
@@ -141,7 +162,7 @@ src
 ├─ index.ts — "Package Re-exports"
 ├─ Multicall.ts — "The Multicall Contract"
 tests
-└─ Multicall.test.ts — "Multicall Tests"
+└─ ...
 ```
 
 
