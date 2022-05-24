@@ -5,16 +5,23 @@
   "license": "AGPL-3.0-only",
   "version": "3.1.0",
   "repository": "git://github.com/abigger87/pilum.git",
+  "keywords": [
+    "multicall",
+    "typescript",
+    "ethereum",
+    "pilum"
+  ],
+  "homepage": "https://github.com/abigger87/pilum#readme",
+  "bugs": {
+    "url": "https://github.com/abigger87/pilum/issues"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "dependencies": {
-    "@ethersproject/providers": "^5.6.6",
-    "ethers": "^5.6.4"
-  },
   "scripts": {
+    "roll": "rollup -c",
     "prepublish": "tsc && pkgfiles",
     "gitpublish": "npm publish --@abigger87:registry=https://npm.pkg.github.com/",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
@@ -23,7 +30,13 @@
     "lint:fix": "eslint --ext .js,.ts . --fix",
     "size": "tarball=\"$(npm pack .)\"; wc -c \"${tarball}\"; tar tvf \"${tarball}\"; rm \"${tarball}\";"
   },
+  "dependencies": {
+    "@babel/runtime": "^7.18.0",
+    "@ethersproject/providers": "^5.6.6",
+    "ethers": "^5.6.4"
+  },
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.18.0",
     "@types/jest": "^27.5.1",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
@@ -33,6 +46,14 @@
     "jest": "^28.1.0",
     "pkgfiles": "^2.3.2",
     "prettier": "^2.6.2",
+    "rollup": "^2.74.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
