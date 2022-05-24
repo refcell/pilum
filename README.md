@@ -23,6 +23,15 @@ npm install pilum
 yarn add pilum
 ```
 
+## Package Size
+
+| Package                                                   | Minified | Minified + GZIP | Unpacked |
+| --------------------------------------------------------- | -------- | --------------- | -------- |
+| [abigger87/pilum][pilum]                                  | 443kB    | 133kB           | 159kB    |
+| [makerdao/multicall.js][makerdao/multicall.js]            | 113kB    | 33kB            | 1.23MB   |
+| [joshstevens19/ethereum-multicall][ethereum-multicall]    | 426kB    | 128kB           | 105kB    |
+| [cavanmflynn/ethers-multicall][ethers-multicall]          | 197kB    | 60kB            | 27kB     |
+
 
 ## Usage
 
